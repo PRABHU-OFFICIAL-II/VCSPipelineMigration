@@ -215,7 +215,7 @@ function HomePage({ sessionId, serverUrl }) {
   };
 
   if (isProcessing) {
-    return <ProcessPage selectedAssets={checkedAssets} onGoBack={() => setIsProcessing(false)} />;
+    return <ProcessPage selectedAssets={checkedAssets} serverUrl={serverUrl} sessionId={sessionId} onGoBack={() => setIsProcessing(false)} />;
   }
 
   return (

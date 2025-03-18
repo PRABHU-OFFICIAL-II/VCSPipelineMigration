@@ -1,146 +1,194 @@
 /* ProcessPage.css */
 
 .process-container {
-    font-family: sans-serif;
-    padding: 30px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background-color: #f8f9fa;
-    min-height: 100vh;
-    min-width: 100vh;
-  }
-  
-  .process-title {
-    font-size: 24px;
-    margin-bottom: 30px;
-    color: #343a40;
-  }
-  
-  .grid-container {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    max-width: 960px;
-    margin-bottom: 30px;
-  }
-  
-  .row {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 20px; /* Space between rows */
-  }
-  
-  .row:last-child {
-    margin-bottom: 0;
-  }
-  
-  .grid-item {
-    flex: 1; /* Each item takes equal width */
-    padding: 20px;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    background-color: #fff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    min-height: 200px; /* Set a minimum height for all divs */
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start; /* Align content to the top by default */
-  }
-  
-  .grid-item-title {
-    font-size: 18px;
-    margin-bottom: 15px;
-    color: #495057;
-  }
-  
-  .assets-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    overflow-y: auto;
-    max-height: 150px; /* Example max height for the list */
-  }
-  
-  .assets-list-item {
-    padding: 8px 0;
-    border-bottom: 1px solid #eee;
-    color: #212529;
-  }
-  
-  .assets-list-item:last-child {
-    border-bottom: none;
-  }
-  
-  .assets-list-item strong {
-    font-weight: 600;
-    margin-right: 5px;
-    color: #343a40;
-  }
-  
-  .action-button {
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.2s ease-in-out;
-  }
-  
-  .action-button:hover {
-    background-color: #0056b3;
-  }
-  
-  .status-message {
-    margin-top: 10px;
-    font-size: 14px;
-    color: #28a745;
-  }
-  
-  .error-message {
-    color: #dc3545;
-  }
-  
-  .go-back-button {
-    padding: 10px 20px;
-    background-color: #6c757d;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.2s ease-in-out;
-    margin-top: 20px;
-  }
-  
-  .go-back-button:hover {
-    background-color: #545b62;
-  }
-  
-  .loading-indicator {
-    display: inline-block;
-    margin-left: 10px;
-  }
-  
-  .assets-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  .assets-table th,
-  .assets-table td {
-    padding: 8px;
-    border-bottom: 1px solid #ddd;
-    text-align: left;
-  }
-  
-  .assets-table th {
-    background-color: #f2f2f2;
-    font-weight: bold;
-  }
-  
-  .assets-table tbody tr:last-child td {
-    border-bottom: none;
-  }
+  font-family: sans-serif;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: max-content;
+}
+
+.process-title {
+  font-size: 24px;
+  margin-bottom: 30px;
+  color: white;
+}
+
+.grid-container {
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  gap: 20px; /* Using the gap for spacing between grid items */
+  border: 1px solid #ced4da; /* Subtle border for the grid container */
+  padding: 20px; /* Padding around the grid items */
+  background-color: #fff; /* Optional background for the grid container */
+  border-radius: 5px; /* Optional rounded corners for the grid container */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Optional shadow for the grid container */
+}
+
+.grid-item {
+  display: flex;
+  flex-direction: column; /* To arrange content within each grid item */
+  padding: 20px;
+  border: 1px solid #ced4da; /* Border for each grid item */
+  border-radius: 5px; /* Rounded corners for grid items */
+  background-color: #f8f9fa; /* Light background for grid items */
+  min-height: 200px; /* Minimum height for each grid item */
+}
+
+.grid-item-title {
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: #495057;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 10px;
+}
+
+/* Styles for content within grid items (like the table) can remain largely the same */
+.assets-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.assets-table th,
+.assets-table td {
+  padding: 8px;
+  border-bottom: 1px solid #e9ecef;
+  text-align: left;
+  color: #495057;
+}
+
+.assets-table th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+  color: #495057;
+}
+
+.assets-table tbody tr:last-child td {
+  border-bottom: none;
+  color: black;
+}
+
+/* Button styles */
+.action-button,
+.render-dependencies-button,
+.go-back-button {
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  border: 1px solid transparent;
+  margin-top: 10px; /* Add some top margin for buttons within grid items */
+}
+
+.action-button {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.action-button:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+.render-dependencies-button {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.render-dependencies-button:hover {
+  background-color: #1e7e34;
+  border-color: #1e7e34;
+}
+
+.go-back-button {
+  background-color: #6c757d;
+  color: #fff;
+}
+
+.go-back-button:hover {
+  background-color: #545b62;
+  border-color: #545b62;
+}
+
+.disabled-button {
+  background-color: #e9ecef;
+  color: #495057;
+  border-color: #e9ecef;
+  cursor: not-allowed;
+}
+
+.status-message,
+.error-message,
+.loading-indicator {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.error-message {
+  color: #dc3545;
+}
+
+.loading-indicator {
+  display: inline-block;
+  margin-left: 10px;
+}
+
+.dependencies-container {
+  margin-top: 15px;
+}
+
+.dependency-item-container {
+  margin-bottom: 15px;
+  padding: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.dependency-parent-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+/* Styles for the dependencies table */
+.dependencies-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dependencies-table th,
+.dependencies-table td {
+  padding: 8px;
+  border-bottom: 1px solid #e9ecef;
+  text-align: left;
+}
+
+.dependencies-table th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+  color: #495057;
+}
+
+.dependencies-table tr {
+  border-bottom: 1px solid #e9ecef;
+  color: #495057;
+}
+
+.dependencies-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.no-dependencies {
+  color: #777;
+  font-style: italic;
+  margin-top: 10px;
+}
+
+.filtered-dependencies-container {
+  margin-top: 10px; /* Optional: Add some top margin for the container */
+}
