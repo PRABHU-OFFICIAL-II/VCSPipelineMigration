@@ -1,0 +1,65 @@
+.process-container {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Align items to the left for a cleaner look */
+  }
+  
+  .process-title {
+    font-size: 1.8em;
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  .assets-list-container {
+    padding: 0; /* Remove padding */
+    width: 100%; /* Take full width */
+    max-width: 800px; /* Adjust max width as needed */
+    margin-bottom: 20px;
+    box-shadow: none; /* Remove box shadow */
+    border: 1px solid #ddd; /* Add a subtle border */
+    border-radius: 4px;
+  }
+  
+  .assets-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .assets-list-item {
+    padding: 10px 15px; /* Add some horizontal padding */
+    border-bottom: 1px solid #eee;
+  }
+  
+  .assets-list-item:last-child {
+    border-bottom: none;
+  }
+  
+  .assets-list-item strong {
+    font-weight: bold;
+    margin-right: 5px;
+  }
+  
+  .go-back-button {
+    padding: 8px 15px;
+    background-color: #f8f9fa; /* Light background */
+    color: #007bff; /* Primary blue color */
+    border: 1px solid #007bff; /* Blue border */
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease; /* Add a subtle transition */
+  }
+  
+  .go-back-button:hover {
+    background-color: #007bff; /* Blue background on hover */
+    color: #fff; /* White text on hover */
+  }
+  
+  .no-assets-message {
+    color: #777;
+    padding: 10px 0;
+  }

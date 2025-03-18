@@ -1,0 +1,200 @@
+/* HomePage.css */
+.homepage-container {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 30px;
+    /* background-color: #f8f9fa; */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.homepage-header {
+    /* background-color: #0056b3; */
+    color: white;
+    padding: 25px 0;
+    text-align: center;
+    width: 100%;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+.homepage-header h1 {
+    margin: 0;
+    font-size: 2.5em;
+    font-weight: 400;
+}
+
+.homepage-content {
+    background-color: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%; /* Slightly wider to accommodate the new column */
+    max-width: 1400px; /* Increased max width */
+    overflow-x: auto; /* Add horizontal scroll if table gets too wide */
+}
+
+.list-projects-button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.1em;
+    margin-bottom: 30px;
+    transition: background-color 0.2s ease-in-out;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.list-projects-button:hover {
+    background-color: #1e7e34;
+}
+
+.list-projects-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.error-message {
+    color: #dc3545;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.projects-list h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.8em;
+    color: #343a40;
+    font-weight: 400;
+}
+
+.projects-list table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.projects-list th,
+.projects-list td {
+    border: 1px solid #e0e0e0;
+    padding: 12px 15px;
+    text-align: left;
+    font-size: 0.95em;
+    color: #333;
+    white-space: nowrap; /* Prevent text wrapping in cells by default */
+}
+
+.projects-list th {
+    background-color: #f2f2f2;
+    font-weight: 600;
+    color: #495057;
+}
+
+.source-control-details {
+    font-size: 0.85em;
+    color: #6c757d;
+    margin-left: 8px;
+}
+
+.projects-list tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.projects-list tbody tr:hover {
+    background-color: #e6f7ff;
+}
+
+.no-projects-message {
+    color: #6c757d;
+    font-style: italic;
+    font-size: 1em;
+}
+
+/* Adjust column widths */
+.projects-list th:nth-child(1), /* Path */
+.projects-list td:nth-child(1) {
+    width: 25%; /* Adjust as needed */
+}
+
+.projects-list th:nth-child(2), /* Updated By */
+.projects-list td:nth-child(2) {
+    width: 15%;
+}
+
+.projects-list th:nth-child(3), /* Update Time */
+.projects-list td:nth-child(3) {
+    width: 20%;
+}
+
+.projects-list th:nth-child(4), /* Source Control */
+.projects-list td:nth-child(4) {
+    width: 15%;
+    text-align: center; /* Center the Enabled/Disabled text */
+}
+
+.projects-list th:nth-child(5), /* Hash */
+.projects-list td:nth-child(5) {
+    width: 25%; /* Adjust as needed */
+}
+
+.project-row {
+    cursor: pointer;
+}
+
+.project-row td:first-child {
+    text-align: center;
+}
+
+.project-details-row {
+    background-color: #f5f5f5;
+}
+
+.project-details {
+    padding: 20px;
+}
+
+.project-details h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+    color: #555;
+}
+
+.project-details table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    border: 1px solid #ddd;
+}
+
+.project-details th,
+.project-details td {
+    border: 1px solid #ddd;
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 0.9em;
+}
+
+.project-details th {
+    background-color: #eee;
+    font-weight: bold;
+    color: #333;
+}
+
+.project-details tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.project-details tbody tr:hover {
+    background-color: #e9ecef;
+}
+
+.project-details-row td > .project-details > table tbody tr td:first-child {
+    padding-left: 20px; /* Indent folder contents visually */
+}
