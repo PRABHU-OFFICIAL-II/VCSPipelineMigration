@@ -1,37 +1,71 @@
+/* ProcessPage.css */
+
 .process-container {
-    font-family: Arial, sans-serif;
-    padding: 20px;
-    min-height: 100vh;
+    font-family: sans-serif;
+    padding: 30px;
     display: flex;
     flex-direction: column;
-    align-items: flex-start; /* Align items to the left for a cleaner look */
+    align-items: center;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    min-width: 100vh;
   }
   
   .process-title {
-    font-size: 1.8em;
-    margin-bottom: 15px;
-    color: #333;
+    font-size: 24px;
+    margin-bottom: 30px;
+    color: #343a40;
   }
   
-  .assets-list-container {
-    padding: 0; /* Remove padding */
-    width: 100%; /* Take full width */
-    max-width: 800px; /* Adjust max width as needed */
-    margin-bottom: 20px;
-    box-shadow: none; /* Remove box shadow */
-    border: 1px solid #ddd; /* Add a subtle border */
-    border-radius: 4px;
+  .grid-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 960px;
+    margin-bottom: 30px;
+  }
+  
+  .row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px; /* Space between rows */
+  }
+  
+  .row:last-child {
+    margin-bottom: 0;
+  }
+  
+  .grid-item {
+    flex: 1; /* Each item takes equal width */
+    padding: 20px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    min-height: 200px; /* Set a minimum height for all divs */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Align content to the top by default */
+  }
+  
+  .grid-item-title {
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: #495057;
   }
   
   .assets-list {
     list-style: none;
     padding: 0;
     margin: 0;
+    overflow-y: auto;
+    max-height: 150px; /* Example max height for the list */
   }
   
   .assets-list-item {
-    padding: 10px 15px; /* Add some horizontal padding */
+    padding: 8px 0;
     border-bottom: 1px solid #eee;
+    color: #212529;
   }
   
   .assets-list-item:last-child {
@@ -39,27 +73,74 @@
   }
   
   .assets-list-item strong {
-    font-weight: bold;
+    font-weight: 600;
     margin-right: 5px;
+    color: #343a40;
+  }
+  
+  .action-button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.2s ease-in-out;
+  }
+  
+  .action-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .status-message {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #28a745;
+  }
+  
+  .error-message {
+    color: #dc3545;
   }
   
   .go-back-button {
-    padding: 8px 15px;
-    background-color: #f8f9fa; /* Light background */
-    color: #007bff; /* Primary blue color */
-    border: 1px solid #007bff; /* Blue border */
-    border-radius: 4px;
+    padding: 10px 20px;
+    background-color: #6c757d;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
     cursor: pointer;
-    font-size: 1em;
-    transition: background-color 0.3s ease; /* Add a subtle transition */
+    font-size: 16px;
+    transition: background-color 0.2s ease-in-out;
+    margin-top: 20px;
   }
   
   .go-back-button:hover {
-    background-color: #007bff; /* Blue background on hover */
-    color: #fff; /* White text on hover */
+    background-color: #545b62;
   }
   
-  .no-assets-message {
-    color: #777;
-    padding: 10px 0;
+  .loading-indicator {
+    display: inline-block;
+    margin-left: 10px;
+  }
+  
+  .assets-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .assets-table th,
+  .assets-table td {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+  }
+  
+  .assets-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+  }
+  
+  .assets-table tbody tr:last-child td {
+    border-bottom: none;
   }
