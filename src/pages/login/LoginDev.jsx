@@ -53,7 +53,6 @@ function LoginDev() {
                 headers: myHeaders,
                 body: raw,
                 redirect: "follow",
-                mode: "no-cors"
             };
 
             const apiUrl = `${regionURL.replace(/\/$/, "")}/ma/api/v2/user/login`;
