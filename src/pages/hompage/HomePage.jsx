@@ -214,6 +214,10 @@ function HomePage({ sessionId, serverUrl }) {
     setIsProcessing(true);
   };
 
+  const handleResetSelection = () => {
+    setCheckedItems({});
+  };
+
   if (isProcessing) {
     return <ProcessPage selectedAssets={checkedAssets} serverUrl={serverUrl} sessionId={sessionId} onGoBack={() => setIsProcessing(false)} />;
   }
@@ -429,7 +433,7 @@ function HomePage({ sessionId, serverUrl }) {
                                                         size={100}
                                                         loading={
                                                           detailsLoading[
-                                                            item.path
+                                                          item.path
                                                           ]
                                                         }
                                                         aria-label="loading-indicator"
@@ -437,14 +441,14 @@ function HomePage({ sessionId, serverUrl }) {
                                                       <p>Loading contents...</p>
                                                     </div>
                                                   ) : detailsError[
-                                                      item.path
-                                                    ] ? (
+                                                    item.path
+                                                  ] ? (
                                                     <p className="error-message">
                                                       Error loading contents:{" "}
                                                       {detailsError[item.path]}
                                                     </p>
                                                   ) : projectDetails[item.path]
-                                                      .length > 0 ? (
+                                                    .length > 0 ? (
                                                     <table>
                                                       <thead>
                                                         <tr>
@@ -487,7 +491,7 @@ function HomePage({ sessionId, serverUrl }) {
                                                                   type="checkbox"
                                                                   checked={
                                                                     checkedItems[
-                                                                      subItem.id
+                                                                    subItem.id
                                                                     ] || false
                                                                   }
                                                                   onChange={() =>
@@ -558,9 +562,14 @@ function HomePage({ sessionId, serverUrl }) {
         )}
 
         {Object.keys(checkedItems).length > 0 && (
-          <button onClick={handleProcessClick} className="process-button">
-            Process
-          </button>
+          <>
+            <button onClick={handleProcessClick} className="process-button">
+              Process
+            </button>
+            <button onClick={handleResetSelection} className="reset-button">
+              Reset Selection
+            </button>
+          </>
         )}
 
         {projects.length === 0 && !loading && !error && (

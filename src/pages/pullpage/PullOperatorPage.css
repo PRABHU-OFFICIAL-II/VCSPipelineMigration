@@ -17,7 +17,6 @@
 
 .login-prod-container {
   flex: 1;
-  /* background-color: #fff; */
   border: 1px solid #ddd;
   padding: 25px;
   border-radius: 8px;
@@ -64,7 +63,6 @@
 .framed-data-display {
   margin-bottom: 20px;
   padding: 15px;
-  background-color: #f9f9f9;
   border: 1px solid #eee;
   font-family: monospace;
   overflow: auto;
@@ -298,7 +296,7 @@ p{
 
 .progress-indicator {
     padding: 15px;
-    background-color: #e9ecef;
+    /* background-color: #e9ecef; */
     border: 1px solid #ced4da;
     border-radius: 4px;
     margin-bottom: 10px;
