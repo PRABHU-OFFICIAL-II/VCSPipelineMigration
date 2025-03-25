@@ -20,6 +20,8 @@ function HomePage({ sessionId, serverUrl }) {
   const fetchProjects = async () => {
     setLoading(true);
     setError("");
+    setProjects([]); // Clear existing projects before fetching
+
     try {
       const myHeaders = new Headers();
       myHeaders.append("INFA-SESSION-ID", sessionId);
@@ -30,23 +32,55 @@ function HomePage({ sessionId, serverUrl }) {
         redirect: "follow",
       };
 
-      const apiUrl = `${serverUrl.replace(
+      const initialApiUrl = `${serverUrl.replace(
         /\/$/,
         ""
-      )}/public/core/v3/objects?q=type=='PROJECT'`;
+      )}/public/core/v3/objects?q=type=='PROJECT'&top=200&skip=0`; // Fetch the first 200 to get the count
 
-      const response = await fetch(apiUrl, requestOptions);
-      if (!response.ok) {
-        const text = await response.text();
+      const initialResponse = await fetch(initialApiUrl, requestOptions);
+      if (!initialResponse.ok) {
+        const text = await initialResponse.text();
         throw new Error(
-          `Failed to fetch projects: ${response.status} - ${text}`
+          `Failed to fetch initial project data: ${initialResponse.status} - ${text}`
         );
       }
-      const data = await response.json();
-      setProjects(data.objects);
+      const initialData = await initialResponse.json();
+      const totalCount = initialData.count;
+      let allProjects = [...initialData.objects];
+
+      if (totalCount > 200) {
+        const numPages = Math.ceil(totalCount / 200);
+
+        for (let i = 1; i < numPages; i++) {
+          const skip = i * 200;
+          const paginatedApiUrl = `${serverUrl.replace(
+            /\/$/,
+            ""
+          )}/public/core/v3/objects?q=type=='PROJECT'&top=200&skip=${skip}`;
+
+          const paginatedResponse = await fetch(
+            paginatedApiUrl,
+            requestOptions
+          );
+          if (!paginatedResponse.ok) {
+            const text = await paginatedResponse.text();
+            throw new Error(
+              `Failed to fetch project data for page ${i + 1}: ${
+                paginatedResponse.status
+              } - ${text}`
+            );
+          }
+          const paginatedData = await paginatedResponse.json();
+          allProjects = [...allProjects, ...paginatedData.objects];
+        }
+      }
+
+      setProjects(allProjects);
+      setCheckedItems({}); // Reset checked items after fetching all projects
     } catch (error) {
       console.error("Error fetching projects:", error);
       setError(error.message);
+      setProjects([]); // Clear projects on error
     } finally {
       setLoading(false);
     }
@@ -71,24 +105,55 @@ function HomePage({ sessionId, serverUrl }) {
         redirect: "follow",
       };
 
-      const apiUrl = `${serverUrl.replace(
+      const initialApiUrl = `${serverUrl.replace(
         /\/$/,
         ""
-      )}/public/core/v3/objects?q=location=='${projectName}'`;
+      )}/public/core/v3/objects?q=location=='${projectName}'&top=200&skip=0`;
 
-      const response = await fetch(apiUrl, requestOptions);
-      if (!response.ok) {
-        const text = await response.text();
+      const initialResponse = await fetch(initialApiUrl, requestOptions);
+      if (!initialResponse.ok) {
+        const text = await initialResponse.text();
         throw new Error(
-          `Failed to fetch details for ${projectName}: ${response.status} - ${text}`
+          `Failed to fetch initial details for ${projectName}: ${initialResponse.status} - ${text}`
         );
       }
-      const data = await response.json();
-      setProjectDetails((prev) => ({ ...prev, [projectName]: data.objects }));
+      const initialData = await initialResponse.json();
+      const totalCount = initialData.count;
+      let allDetails = [...initialData.objects];
+
+      if (totalCount > 200) {
+        const numPages = Math.ceil(totalCount / 200);
+
+        for (let i = 1; i < numPages; i++) {
+          const skip = i * 200;
+          const paginatedApiUrl = `${serverUrl.replace(
+            /\/$/,
+            ""
+          )}/public/core/v3/objects?q=location=='${projectName}'&top=200&skip=${skip}`;
+
+          const paginatedResponse = await fetch(
+            paginatedApiUrl,
+            requestOptions
+          );
+          if (!paginatedResponse.ok) {
+            const text = await paginatedResponse.text();
+            throw new Error(
+              `Failed to fetch details for ${projectName}, page ${i + 1}: ${
+                paginatedResponse.status
+              } - ${text}`
+            );
+          }
+          const paginatedData = await paginatedResponse.json();
+          allDetails = [...allDetails, ...paginatedData.objects];
+        }
+      }
+
+      setProjectDetails((prev) => ({ ...prev, [projectName]: allDetails }));
       setExpandedProject(expandedProject === projectName ? null : projectName);
     } catch (error) {
       console.error(`Error fetching details for ${projectName}:`, error);
       setDetailsError((prev) => ({ ...prev, [projectName]: error.message }));
+      setProjectDetails((prev) => ({ ...prev, [projectName]: [] })); // Clear details on error
     } finally {
       setDetailsLoading((prev) => ({ ...prev, [projectName]: false }));
     }
@@ -113,23 +178,54 @@ function HomePage({ sessionId, serverUrl }) {
         redirect: "follow",
       };
 
-      const apiUrl = `${serverUrl.replace(
+      const initialApiUrl = `${serverUrl.replace(
         /\/$/,
         ""
-      )}/public/core/v3/objects?q=location=='${folderPath}'`;
+      )}/public/core/v3/objects?q=location=='${folderPath}'&top=200&skip=0`;
 
-      const response = await fetch(apiUrl, requestOptions);
-      if (!response.ok) {
-        const text = await response.text();
+      const initialResponse = await fetch(initialApiUrl, requestOptions);
+      if (!initialResponse.ok) {
+        const text = await initialResponse.text();
         throw new Error(
-          `Failed to fetch details for ${folderPath}: ${response.status} - ${text}`
+          `Failed to fetch initial details for ${folderPath}: ${initialResponse.status} - ${text}`
         );
       }
-      const data = await response.json();
-      setProjectDetails((prev) => ({ ...prev, [folderPath]: data.objects }));
+      const initialData = await initialResponse.json();
+      const totalCount = initialData.count;
+      let allDetails = [...initialData.objects];
+
+      if (totalCount > 200) {
+        const numPages = Math.ceil(totalCount / 200);
+
+        for (let i = 1; i < numPages; i++) {
+          const skip = i * 200;
+          const paginatedApiUrl = `${serverUrl.replace(
+            /\/$/,
+            ""
+          )}/public/core/v3/objects?q=location=='${folderPath}'&top=200&skip=${skip}`;
+
+          const paginatedResponse = await fetch(
+            paginatedApiUrl,
+            requestOptions
+          );
+          if (!paginatedResponse.ok) {
+            const text = await paginatedResponse.text();
+            throw new Error(
+              `Failed to fetch details for ${folderPath}, page ${i + 1}: ${
+                paginatedResponse.status
+              } - ${text}`
+            );
+          }
+          const paginatedData = await paginatedResponse.json();
+          allDetails = [...allDetails, ...paginatedData.objects];
+        }
+      }
+
+      setProjectDetails((prev) => ({ ...prev, [folderPath]: allDetails }));
     } catch (error) {
       console.error(`Error fetching details for ${folderPath}:`, error);
       setDetailsError((prev) => ({ ...prev, [folderPath]: error.message }));
+      setProjectDetails((prev) => ({ ...prev, [folderPath]: [] })); // Clear details on error
     } finally {
       setDetailsLoading((prev) => ({ ...prev, [folderPath]: false }));
     }
@@ -219,7 +315,14 @@ function HomePage({ sessionId, serverUrl }) {
   };
 
   if (isProcessing) {
-    return <ProcessPage selectedAssets={checkedAssets} serverUrl={serverUrl} sessionId={sessionId} onGoBack={() => setIsProcessing(false)} />;
+    return (
+      <ProcessPage
+        selectedAssets={checkedAssets}
+        serverUrl={serverUrl}
+        sessionId={sessionId}
+        onGoBack={() => setIsProcessing(false)}
+      />
+    );
   }
 
   return (
@@ -433,7 +536,7 @@ function HomePage({ sessionId, serverUrl }) {
                                                         size={100}
                                                         loading={
                                                           detailsLoading[
-                                                          item.path
+                                                            item.path
                                                           ]
                                                         }
                                                         aria-label="loading-indicator"
@@ -441,14 +544,14 @@ function HomePage({ sessionId, serverUrl }) {
                                                       <p>Loading contents...</p>
                                                     </div>
                                                   ) : detailsError[
-                                                    item.path
-                                                  ] ? (
+                                                      item.path
+                                                    ] ? (
                                                     <p className="error-message">
                                                       Error loading contents:{" "}
                                                       {detailsError[item.path]}
                                                     </p>
                                                   ) : projectDetails[item.path]
-                                                    .length > 0 ? (
+                                                      .length > 0 ? (
                                                     <table>
                                                       <thead>
                                                         <tr>
@@ -491,7 +594,7 @@ function HomePage({ sessionId, serverUrl }) {
                                                                   type="checkbox"
                                                                   checked={
                                                                     checkedItems[
-                                                                    subItem.id
+                                                                      subItem.id
                                                                     ] || false
                                                                   }
                                                                   onChange={() =>
