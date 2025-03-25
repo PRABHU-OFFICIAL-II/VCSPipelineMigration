@@ -20,7 +20,7 @@ function HomePage({ sessionId, serverUrl }) {
   const fetchProjects = async () => {
     setLoading(true);
     setError("");
-    setProjects([]); // Clear existing projects before fetching
+    setProjects([]);
 
     try {
       const myHeaders = new Headers();
@@ -35,7 +35,7 @@ function HomePage({ sessionId, serverUrl }) {
       const initialApiUrl = `${serverUrl.replace(
         /\/$/,
         ""
-      )}/public/core/v3/objects?q=type=='PROJECT'&top=200&skip=0`; // Fetch the first 200 to get the count
+      )}/public/core/v3/objects?q=type=='PROJECT'&top=200&skip=0`;
 
       const initialResponse = await fetch(initialApiUrl, requestOptions);
       if (!initialResponse.ok) {
@@ -76,11 +76,11 @@ function HomePage({ sessionId, serverUrl }) {
       }
 
       setProjects(allProjects);
-      setCheckedItems({}); // Reset checked items after fetching all projects
+      setCheckedItems({});
     } catch (error) {
       console.error("Error fetching projects:", error);
       setError(error.message);
-      setProjects([]); // Clear projects on error
+      setProjects([]);
     } finally {
       setLoading(false);
     }
@@ -153,7 +153,7 @@ function HomePage({ sessionId, serverUrl }) {
     } catch (error) {
       console.error(`Error fetching details for ${projectName}:`, error);
       setDetailsError((prev) => ({ ...prev, [projectName]: error.message }));
-      setProjectDetails((prev) => ({ ...prev, [projectName]: [] })); // Clear details on error
+      setProjectDetails((prev) => ({ ...prev, [projectName]: [] }));
     } finally {
       setDetailsLoading((prev) => ({ ...prev, [projectName]: false }));
     }
@@ -225,7 +225,7 @@ function HomePage({ sessionId, serverUrl }) {
     } catch (error) {
       console.error(`Error fetching details for ${folderPath}:`, error);
       setDetailsError((prev) => ({ ...prev, [folderPath]: error.message }));
-      setProjectDetails((prev) => ({ ...prev, [folderPath]: [] })); // Clear details on error
+      setProjectDetails((prev) => ({ ...prev, [folderPath]: [] }));
     } finally {
       setDetailsLoading((prev) => ({ ...prev, [folderPath]: false }));
     }
@@ -270,7 +270,6 @@ function HomePage({ sessionId, serverUrl }) {
     const updatedCheckedItems = { ...checkedItems };
     projectDetails[folderPath]?.forEach((item) => {
       if (item.type !== "Folder") {
-        // Only check assets within the folder
         updatedCheckedItems[item.id] = isChecked;
       }
     });

@@ -33,6 +33,7 @@ function ProcessPage({ selectedAssets, sessionId, serverUrl, onGoBack }) {
     "TASKFLOW",
     "UDF",
     "MCT",
+    "SAAS_HSCHEMA"
   ]);
 
   const handleRenderDependencies = async () => {
@@ -176,7 +177,7 @@ function ProcessPage({ selectedAssets, sessionId, serverUrl, onGoBack }) {
     selectedAssets.forEach((asset) => {
       objectsToInclude.push({
         path: asset.name.split("/"),
-        type: asset.type.toUpperCase() === "MCT" ? "MTT" : (asset.type.toUpperCase() === "MAPPING" ? "DTEMPLATE" : asset.type.toUpperCase()),
+        type: asset.type.toUpperCase() === "MCT" ? "MTT" : (asset.type.toUpperCase() === "MAPPING" ? "DTEMPLATE" : (asset.type.toUpperCase() === "SAAS_HSCHEMA" ? "HSCHEMA" : asset.type.toUpperCase())),
       });
     });
 
@@ -185,7 +186,7 @@ function ProcessPage({ selectedAssets, sessionId, serverUrl, onGoBack }) {
       depInfo.references.forEach((ref) => {
         objectsToInclude.push({
           path: ref.path.split("/"),
-          type: ref.documentType.toUpperCase() === "MCT" ? "MTT" : (ref.documentType.toUpperCase() === "MAPPING" ? "DTEMPLATE" : ref.documentType.toUpperCase()),
+          type: ref.documentType.toUpperCase() === "MCT" ? "MTT" : (ref.documentType.toUpperCase() === "MAPPING" ? "DTEMPLATE" : (ref.documentType.toUpperCase() === "SAAS_HSCHEMA" ? "HSCHEMA" : ref.documentType.toUpperCase())),
         });
       });
     }
