@@ -13,6 +13,9 @@ function ProcessPage({ selectedAssets, sessionId, serverUrl, onGoBack }) {
   const [framedPullRequestData, setFramedPullRequestData] = useState(null);
   const [commitHashError, setCommitHashError] = useState("");
   const [isPullOperatorVisible, setIsPullOperatorVisible] = useState(false);
+  const [isEditingJSON, setIsEditingJSON] = useState(false);
+  const [editedJSON, setEditedJSON] = useState("");
+  const [jsonParsingError, setJSONParsingError] = useState("");
 
   const allowedTypes = new Set([
     "DTEMPLATE",
@@ -33,7 +36,7 @@ function ProcessPage({ selectedAssets, sessionId, serverUrl, onGoBack }) {
     "TASKFLOW",
     "UDF",
     "MCT",
-    "SAAS_HSCHEMA"
+    "SAAS_HSCHEMA",
   ]);
 
   const handleRenderDependencies = async () => {
@@ -158,7 +161,10 @@ function ProcessPage({ selectedAssets, sessionId, serverUrl, onGoBack }) {
       const filteredRefs = depInfo.references.filter((ref) =>
         allowedTypes.has(ref.documentType.toUpperCase())
       );
-      if (filteredRefs.length > 0 || selectedAssets.some((asset) => asset.id === parentId)) {
+      if (
+        filteredRefs.length > 0 ||
+        selectedAssets.some((asset) => asset.id === parentId)
+      ) {
         filtered[parentId] = { ...depInfo, references: filteredRefs };
       }
     }
@@ -177,7 +183,14 @@ function ProcessPage({ selectedAssets, sessionId, serverUrl, onGoBack }) {
     selectedAssets.forEach((asset) => {
       objectsToInclude.push({
         path: asset.name.split("/"),
-        type: asset.type.toUpperCase() === "MCT" ? "MTT" : (asset.type.toUpperCase() === "MAPPING" ? "DTEMPLATE" : (asset.type.toUpperCase() === "SAAS_HSCHEMA" ? "HSCHEMA" : asset.type.toUpperCase())),
+        type:
+          asset.type.toUpperCase() === "MCT"
+            ? "MTT"
+            : asset.type.toUpperCase() === "MAPPING"
+            ? "DTEMPLATE"
+            : asset.type.toUpperCase() === "SAAS_HSCHEMA"
+            ? "HSCHEMA"
+            : asset.type.toUpperCase(),
       });
     });
 
@@ -186,7 +199,14 @@ function ProcessPage({ selectedAssets, sessionId, serverUrl, onGoBack }) {
       depInfo.references.forEach((ref) => {
         objectsToInclude.push({
           path: ref.path.split("/"),
-          type: ref.documentType.toUpperCase() === "MCT" ? "MTT" : (ref.documentType.toUpperCase() === "MAPPING" ? "DTEMPLATE" : (ref.documentType.toUpperCase() === "SAAS_HSCHEMA" ? "HSCHEMA" : ref.documentType.toUpperCase())),
+          type:
+            ref.documentType.toUpperCase() === "MCT"
+              ? "MTT"
+              : ref.documentType.toUpperCase() === "MAPPING"
+              ? "DTEMPLATE"
+              : ref.documentType.toUpperCase() === "SAAS_HSCHEMA"
+              ? "HSCHEMA"
+              : ref.documentType.toUpperCase(),
         });
       });
     }
@@ -197,7 +217,25 @@ function ProcessPage({ selectedAssets, sessionId, serverUrl, onGoBack }) {
     };
 
     setFramedPullRequestData(framedData);
+    setEditedJSON(JSON.stringify(framedData, null, 2)); // Initialize editedJSON
+    setIsEditingJSON(true); // Enable JSON editing
     console.log("Framed Pull Request Data:", framedData);
+  };
+
+  const handleEditJSONChange = (event) => {
+    setEditedJSON(event.target.value);
+    setJSONParsingError("");
+  };
+
+  const handleSaveEditedJSON = () => {
+    try {
+      const parsedJSON = JSON.parse(editedJSON);
+      setFramedPullRequestData(parsedJSON);
+      setIsEditingJSON(false);
+    } catch (error) {
+      setJSONParsingError("Invalid JSON format.");
+      console.error("Error parsing JSON:", error);
+    }
   };
 
   const handleProceedToPull = () => {
@@ -249,8 +287,11 @@ function ProcessPage({ selectedAssets, sessionId, serverUrl, onGoBack }) {
               <h3 className="grid-item-title">Render Dependencies</h3>
               <button
                 onClick={handleRenderDependencies}
-                className={`action-button render-dependencies-button ${Object.values(dependenciesLoading).some(Boolean) ? "disabled-button" : ""
-                  }`}
+                className={`action-button render-dependencies-button ${
+                  Object.values(dependenciesLoading).some(Boolean)
+                    ? "disabled-button"
+                    : ""
+                }`}
                 disabled={Object.values(dependenciesLoading).some(Boolean)}
               >
                 {Object.values(dependenciesLoading).some(Boolean)
@@ -265,49 +306,51 @@ function ProcessPage({ selectedAssets, sessionId, serverUrl, onGoBack }) {
                       className="status-message error-message dependency-error"
                     >
                       Error fetching dependencies for{" "}
-                      {selectedAssets.find((a) => a.id === assetId)?.name}: {error}
+                      {selectedAssets.find((a) => a.id === assetId)?.name}:{" "}
+                      {error}
                     </p>
                   ) : null
                 )}
-              {Object.keys(dependencies).length > 0 && allDependenciesLoaded && (
-                <div className="dependencies-container">
-                  {Object.values(dependencies).map((depInfo) => (
-                    <div
-                      key={depInfo.parent.id}
-                      className="dependency-item-container"
-                    >
-                      <h4 className="dependency-parent-title">
-                        Dependencies for: {depInfo.parent.name} (
-                        {depInfo.parent.type})
-                      </h4>
-                      {depInfo.references.length > 0 ? (
-                        <table className="dependencies-table">
-                          <thead>
-                            <tr>
-                              <th>Path</th>
-                              <th>Type</th>
-                              <th>ID</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {depInfo.references.map((ref) => (
-                              <tr key={ref.id}>
-                                <td>{ref.path}</td>
-                                <td>{ref.documentType}</td>
-                                <td>{ref.id}</td>
+              {Object.keys(dependencies).length > 0 &&
+                allDependenciesLoaded && (
+                  <div className="dependencies-container">
+                    {Object.values(dependencies).map((depInfo) => (
+                      <div
+                        key={depInfo.parent.id}
+                        className="dependency-item-container"
+                      >
+                        <h4 className="dependency-parent-title">
+                          Dependencies for: {depInfo.parent.name} (
+                          {depInfo.parent.type})
+                        </h4>
+                        {depInfo.references.length > 0 ? (
+                          <table className="dependencies-table">
+                            <thead>
+                              <tr>
+                                <th>Path</th>
+                                <th>Type</th>
+                                <th>ID</th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      ) : (
-                        <p className="no-dependencies">
-                          No dependencies found for this asset.
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
+                            </thead>
+                            <tbody>
+                              {depInfo.references.map((ref) => (
+                                <tr key={ref.id}>
+                                  <td>{ref.path}</td>
+                                  <td>{ref.documentType}</td>
+                                  <td>{ref.id}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        ) : (
+                          <p className="no-dependencies">
+                            No dependencies found for this asset.
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
             </div>
 
             <div className="grid-item">
@@ -352,7 +395,9 @@ function ProcessPage({ selectedAssets, sessionId, serverUrl, onGoBack }) {
                               allowedTypes.has(ref.documentType.toUpperCase())
                             ).length === 0 && (
                               <tr>
-                                <td colSpan="3">No filtered dependencies found.</td>
+                                <td colSpan="3">
+                                  No filtered dependencies found.
+                                </td>
                               </tr>
                             )}
                           {!selectedAssets.some(
@@ -362,7 +407,9 @@ function ProcessPage({ selectedAssets, sessionId, serverUrl, onGoBack }) {
                               allowedTypes.has(ref.documentType.toUpperCase())
                             ).length === 0 && (
                               <tr>
-                                <td colSpan="3">No filtered dependencies found.</td>
+                                <td colSpan="3">
+                                  No filtered dependencies found.
+                                </td>
                               </tr>
                             )}
                         </tbody>
@@ -389,7 +436,9 @@ function ProcessPage({ selectedAssets, sessionId, serverUrl, onGoBack }) {
                   required
                 />
                 {commitHashError && (
-                  <p className="status-message error-message">{commitHashError}</p>
+                  <p className="status-message error-message">
+                    {commitHashError}
+                  </p>
                 )}
               </div>
               <button
@@ -400,15 +449,52 @@ function ProcessPage({ selectedAssets, sessionId, serverUrl, onGoBack }) {
                 Frame Pull Request
               </button>
 
-              {framedPullRequestData && (
+              {framedPullRequestData && !isEditingJSON && (
                 <div className="framed-data-display">
                   <pre>
                     <code
                       dangerouslySetInnerHTML={{
-                        __html: formatJSONWithHighlighting(framedPullRequestData),
+                        __html: formatJSONWithHighlighting(
+                          framedPullRequestData
+                        ),
                       }}
                     />
                   </pre>
+                  <button
+                    onClick={() => setIsEditingJSON(true)}
+                    className="edit-json-button"
+                  >
+                    Edit JSON
+                  </button>
+                </div>
+              )}
+
+              {isEditingJSON && (
+                <div className="edit-json-area">
+                  <textarea
+                    className="json-editor"
+                    value={editedJSON}
+                    onChange={handleEditJSONChange}
+                  />
+                  {jsonParsingError && (
+                    <p className="status-message error-message">
+                      {jsonParsingError}
+                    </p>
+                  )}
+                  <div className="edit-json-actions">
+                    <button
+                      onClick={handleSaveEditedJSON}
+                      className="save-json-button"
+                    >
+                      Save Changes
+                    </button>
+                    <button
+                      onClick={() => setIsEditingJSON(false)}
+                      className="cancel-json-button"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -418,11 +504,15 @@ function ProcessPage({ selectedAssets, sessionId, serverUrl, onGoBack }) {
                 <button onClick={onGoBack} className="go-back-button">
                   Go Back
                 </button>
-                {Object.keys(filteredDependencies).length > 0 && framedPullRequestData && (
-                  <button onClick={handleProceedToPull} className="proceed-to-pull-button">
-                    Proceed to Pull Action
-                  </button>
-                )}
+                {Object.keys(filteredDependencies).length > 0 &&
+                  framedPullRequestData && (
+                    <button
+                      onClick={handleProceedToPull}
+                      className="proceed-to-pull-button"
+                    >
+                      Proceed to Pull Action
+                    </button>
+                  )}
               </>
             )}
           </div>

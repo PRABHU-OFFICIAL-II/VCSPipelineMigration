@@ -284,3 +284,22 @@
   font-weight: bold;
   margin-top: 5px;
 }
+
+.edit-json-area .commit-hash-input {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.edit-json-area .commit-hash-input label {
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+.edit-json-area .commit-hash-input input[type="text"] {
+  flex-grow: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}

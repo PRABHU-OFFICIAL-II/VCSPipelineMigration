@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import LoginProd from '../loginprod/LoginProd';
 import './PullOperatorPage.css';
-import { formatJSONWithHighlighting } from '../../utils/formatJSONWithHighlighting';
 
 function PullOperatorPage({ framedPullRequest, onGoBack }) {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -93,11 +92,11 @@ function PullOperatorPage({ framedPullRequest, onGoBack }) {
                             setShowScaDetailsAfterDelay(true);
                             setDelayLoading(false);
                         }
-                    }, 10000); // 10000 milliseconds = 10 seconds
+                    }, 10000);
                 } else {
                     setSourceControlActionLoading(false);
                 }
-            } catch (e) {
+            } catch {
                 setPullResult(pullResultText);
                 setSourceControlActionLoading(false);
                 setDelayLoading(false);
