@@ -12,6 +12,9 @@ function ProcessPage({ selectedAssets, sessionId, serverUrl, onGoBack }) {
   const [framedPullRequestData, setFramedPullRequestData] = useState(null);
   const [commitHashError, setCommitHashError] = useState("");
   const [isPullOperatorVisible, setIsPullOperatorVisible] = useState(false);
+  const [isEditingJSON, setIsEditingJSON] = useState(false);
+  const [editedJSON, setEditedJSON] = useState("");
+  const [jsonParsingError, setJSONParsingError] = useState("");
 
   const [commitHistory, setCommitHistory] = useState([]);
   const [commitHistoryLoading, setCommitHistoryLoading] = useState(false);
@@ -332,6 +335,8 @@ function ProcessPage({ selectedAssets, sessionId, serverUrl, onGoBack }) {
     }
 
     setFramedPullRequestData(framedData);
+    setEditedJSON(JSON.stringify(framedData, null, 2)); // Initialize editedJSON
+    setIsEditingJSON(true); // Enable JSON editing
     console.log("Framed Pull Request Data:", framedData);
   };
 
@@ -422,6 +427,11 @@ function ProcessPage({ selectedAssets, sessionId, serverUrl, onGoBack }) {
                     ? "disabled-button"
                     : ""
                 }`}
+                className={`action-button render-dependencies-button ${
+                  Object.values(dependenciesLoading).some(Boolean)
+                    ? "disabled-button"
+                    : ""
+                }`}
                 disabled={Object.values(dependenciesLoading).some(Boolean)}
               >
                 {Object.values(dependenciesLoading).some(Boolean)
@@ -438,48 +448,51 @@ function ProcessPage({ selectedAssets, sessionId, serverUrl, onGoBack }) {
                       Error fetching dependencies for{" "}
                       {selectedAssets.find((a) => a.id === assetId)?.name}:{" "}
                       {error}
+                      {selectedAssets.find((a) => a.id === assetId)?.name}:{" "}
+                      {error}
                     </p>
                   ) : null
                 )}
-              {Object.keys(dependencies).length > 0 && allDependenciesLoaded && (
-                <div className="dependencies-container">
-                  {Object.values(dependencies).map((depInfo) => (
-                    <div
-                      key={depInfo.parent.id}
-                      className="dependency-item-container"
-                    >
-                      <h4 className="dependency-parent-title">
-                        Dependencies for: {depInfo.parent.name} (
-                        {depInfo.parent.type})
-                      </h4>
-                      {depInfo.references.length > 0 ? (
-                        <table className="dependencies-table">
-                          <thead>
-                            <tr>
-                              <th>Path</th>
-                              <th>Type</th>
-                              <th>ID</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {depInfo.references.map((ref) => (
-                              <tr key={ref.id}>
-                                <td>{ref.path}</td>
-                                <td>{ref.documentType}</td>
-                                <td>{ref.id}</td>
+              {Object.keys(dependencies).length > 0 &&
+                allDependenciesLoaded && (
+                  <div className="dependencies-container">
+                    {Object.values(dependencies).map((depInfo) => (
+                      <div
+                        key={depInfo.parent.id}
+                        className="dependency-item-container"
+                      >
+                        <h4 className="dependency-parent-title">
+                          Dependencies for: {depInfo.parent.name} (
+                          {depInfo.parent.type})
+                        </h4>
+                        {depInfo.references.length > 0 ? (
+                          <table className="dependencies-table">
+                            <thead>
+                              <tr>
+                                <th>Path</th>
+                                <th>Type</th>
+                                <th>ID</th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      ) : (
-                        <p className="no-dependencies">
-                          No dependencies found for this asset.
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
+                            </thead>
+                            <tbody>
+                              {depInfo.references.map((ref) => (
+                                <tr key={ref.id}>
+                                  <td>{ref.path}</td>
+                                  <td>{ref.documentType}</td>
+                                  <td>{ref.id}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        ) : (
+                          <p className="no-dependencies">
+                            No dependencies found for this asset.
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
             </div>
 
             {/* Commit History Section - Updated table structure */}
@@ -576,6 +589,9 @@ function ProcessPage({ selectedAssets, sessionId, serverUrl, onGoBack }) {
                   placeholder="Enter or select a commit hash"
                 />
                 {commitHashError && (
+                  <p className="status-message error-message">
+                    {commitHashError}
+                  </p>
                   <p className="status-message error-message">
                     {commitHashError}
                   </p>
