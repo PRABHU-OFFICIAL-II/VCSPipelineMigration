@@ -418,7 +418,6 @@ function HomePage({ sessionId, serverUrl }) {
                           type="checkbox"
                           checked={checkedItems[project.id] || false}
                           onChange={() => handleCheckboxChange(project.id)}
-                          // Stop propagation to prevent row click from toggling details
                           onClick={(e) => e.stopPropagation()}
                         />
                       </td>
@@ -435,7 +434,7 @@ function HomePage({ sessionId, serverUrl }) {
                     {expandedProject === project.path &&
                       projectDetails[project.path] && (
                         <tr className="project-details-row">
-                          <td colSpan="7"> {/* Adjusted colSpan to match parent table headers */}
+                          <td colSpan="7">
                             <div className="project-details">
                               <h4>Details for {project.path}:</h4>
                               {detailsLoading[project.path] ? (
