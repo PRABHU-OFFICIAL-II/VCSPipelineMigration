@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import "./HomePage.css";
 import { BiCaretDown, BiCaretUp } from "react-icons/bi";
 import { ClipLoader } from "react-spinners";
@@ -17,7 +17,7 @@ function HomePage({ sessionId, serverUrl }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [checkedAssets, setCheckedAssets] = useState([]);
 
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
@@ -50,16 +50,17 @@ function HomePage({ sessionId, serverUrl }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [sessionId, serverUrl]);
 
-  const fetchProjectDetails = async (projectName) => {
-    if (projectDetails[projectName]) {
-      setExpandedProject(expandedProject === projectName ? null : projectName);
+  const fetchProjectDetails = useCallback(async (projectPath) => {
+    // Toggle collapse/expand if already loaded
+    if (projectDetails[projectPath]) {
+      setExpandedProject((prev) => (prev === projectPath ? null : projectPath));
       return;
     }
 
-    setDetailsLoading((prev) => ({ ...prev, [projectName]: true }));
-    setDetailsError((prev) => ({ ...prev, [projectName]: "" }));
+    setDetailsLoading((prev) => ({ ...prev, [projectPath]: true }));
+    setDetailsError((prev) => ({ ...prev, [projectPath]: "" }));
 
     try {
       const myHeaders = new Headers();
@@ -71,31 +72,35 @@ function HomePage({ sessionId, serverUrl }) {
         redirect: "follow",
       };
 
+      // Fetch direct children of the project
       const apiUrl = `${serverUrl.replace(
         /\/$/,
         ""
-      )}/public/core/v3/objects?q=location=='${projectName}'`;
+      )}/public/core/v3/objects?q=location=='${projectPath}'`;
 
       const response = await fetch(apiUrl, requestOptions);
       if (!response.ok) {
         const text = await response.text();
         throw new Error(
-          `Failed to fetch details for ${projectName}: ${response.status} - ${text}`
+          `Failed to fetch details for ${projectPath}: ${response.status} - ${text}`
         );
       }
       const data = await response.json();
-      setProjectDetails((prev) => ({ ...prev, [projectName]: data.objects }));
-      setExpandedProject(expandedProject === projectName ? null : projectName);
+      setProjectDetails((prev) => ({ ...prev, [projectPath]: data.objects }));
+      setExpandedProject(projectPath); // Always expand when new data is fetched
     } catch (error) {
-      console.error(`Error fetching details for ${projectName}:`, error);
-      setDetailsError((prev) => ({ ...prev, [projectName]: error.message }));
+      console.error(`Error fetching details for ${projectPath}:`, error);
+      setDetailsError((prev) => ({ ...prev, [projectPath]: error.message }));
     } finally {
-      setDetailsLoading((prev) => ({ ...prev, [projectName]: false }));
+      setDetailsLoading((prev) => ({ ...prev, [projectPath]: false }));
     }
-  };
+  }, [sessionId, serverUrl, projectDetails, expandedProject]);
 
-  const fetchFolderDetails = async (folderPath) => {
+  const fetchFolderDetails = useCallback(async (folderPath) => {
+    // Toggle collapse/expand
     setExpandedFolder((prev) => ({ ...prev, [folderPath]: !prev[folderPath] }));
+
+    // If folder details are already loaded, just toggle visibility
     if (projectDetails[folderPath]) {
       return;
     }
@@ -133,93 +138,204 @@ function HomePage({ sessionId, serverUrl }) {
     } finally {
       setDetailsLoading((prev) => ({ ...prev, [folderPath]: false }));
     }
-  };
+  }, [sessionId, serverUrl, projectDetails]);
 
-  const getAssetName = (path, parentPath) => {
+  const getAssetName = useCallback((path, parentPath) => {
     if (path && parentPath && path.startsWith(parentPath + "/")) {
       return path.substring(parentPath.length + 1);
     }
     return path;
-  };
+  }, []);
 
-  const handleCheckboxChange = (itemId) => {
+  // Helper function to recursively get all descendant asset IDs of a given parent (project or folder)
+  // It traverses the projectDetails state to find all assets nested under the given parent's path.
+  // IMPORTANT: This only works for data that is ALREADY LOADED in `projectDetails`.
+  // If a folder is not expanded and its details haven't been fetched, its contents won't be included.
+  const getAllDescendantAssetIds = useCallback((parentPath, allProjectDetails) => {
+    const descendantIds = new Set();
+    const queue = [parentPath];
+    const visitedPaths = new Set();
+
+    while (queue.length > 0) {
+      const currentPath = queue.shift();
+
+      if (visitedPaths.has(currentPath)) {
+        continue;
+      }
+      visitedPaths.add(currentPath);
+
+      if (allProjectDetails[currentPath]) {
+        allProjectDetails[currentPath].forEach(child => {
+          if (child.type && child.type !== 'Project') { // Include Folders in the traversal
+            descendantIds.add(child.id); // Add both assets and folders for selection
+            if (child.type === 'Folder' && allProjectDetails[child.path]) { // Only queue if folder details are already loaded
+              queue.push(child.path);
+            }
+          }
+        });
+      }
+    }
+    return Array.from(descendantIds);
+  }, []);
+
+  const handleCheckboxChange = useCallback((itemId) => {
     setCheckedItems((prevCheckedItems) => ({
       ...prevCheckedItems,
       [itemId]: !prevCheckedItems[itemId],
     }));
-  };
+  }, []);
 
-  const handleCheckAllProjects = (event) => {
+  const handleCheckAllProjects = useCallback((event) => {
     const isChecked = event.target.checked;
-    const updatedCheckedItems = { ...checkedItems };
-    projects.forEach((project) => {
-      updatedCheckedItems[project.id] = isChecked;
+    setCheckedItems((prevCheckedItems) => {
+      const updatedCheckedItems = { ...prevCheckedItems };
+
+      projects.forEach((project) => {
+        updatedCheckedItems[project.id] = isChecked; // Select/deselect the project itself
+
+        // Get all descendant IDs for this project that are CURRENTLY LOADED
+        const projectDescendantIds = getAllDescendantAssetIds(project.path, projectDetails);
+        projectDescendantIds.forEach(id => {
+          updatedCheckedItems[id] = isChecked;
+        });
+      });
+      return updatedCheckedItems;
     });
-    setCheckedItems(updatedCheckedItems);
-  };
+  }, [projects, projectDetails, getAllDescendantAssetIds]);
 
-  const handleCheckAllInProject = (projectName, event) => {
+  const handleCheckAllInProject = useCallback((projectPath, event) => {
     const isChecked = event.target.checked;
-    const updatedCheckedItems = { ...checkedItems };
-    projectDetails[projectName]?.forEach((item) => {
-      if (item.type !== "Project") {
+    setCheckedItems((prevCheckedItems) => {
+      const updatedCheckedItems = { ...prevCheckedItems };
+
+      // Get all direct children (folders and assets) of this project that are CURRENTLY LOADED
+      const directProjectChildren = projectDetails[projectPath] || [];
+
+      directProjectChildren.forEach((item) => {
+        // Select/deselect the direct child itself (whether it's a folder or an asset)
         updatedCheckedItems[item.id] = isChecked;
-      }
-    });
-    setCheckedItems(updatedCheckedItems);
-  };
 
-  const handleCheckAllInFolder = (folderPath, event) => {
-    const isChecked = event.target.checked;
-    const updatedCheckedItems = { ...checkedItems };
-    projectDetails[folderPath]?.forEach((item) => {
-      if (item.type !== "Folder") {
-        // Only check assets within the folder
-        updatedCheckedItems[item.id] = isChecked;
-      }
+        // If the direct child is a folder AND its contents are loaded,
+        // recursively get and update its descendant assets/folders.
+        if (item.type === 'Folder' && projectDetails[item.path]) {
+          const folderDescendantIds = getAllDescendantAssetIds(item.path, projectDetails);
+          folderDescendantIds.forEach(id => {
+            updatedCheckedItems[id] = isChecked;
+          });
+        }
+      });
+      return updatedCheckedItems;
     });
-    setCheckedItems(updatedCheckedItems);
-  };
+  }, [projectDetails, getAllDescendantAssetIds]);
+
+  const handleCheckAllInFolder = useCallback((folderPath, event) => {
+    const isChecked = event.target.checked;
+    setCheckedItems((prevCheckedItems) => {
+      const updatedCheckedItems = { ...prevCheckedItems };
+
+      // Get all direct children (assets and sub-folders) of this folder that are CURRENTLY LOADED
+      const directFolderChildren = projectDetails[folderPath] || [];
+
+      directFolderChildren.forEach((item) => {
+        // Select/deselect the direct child itself (whether it's a folder or an asset)
+        updatedCheckedItems[item.id] = isChecked;
+
+        // If the direct child is a folder AND its contents are loaded,
+        // recursively get and update its descendant assets/folders.
+        if (item.type === 'Folder' && projectDetails[item.path]) {
+          const subFolderDescendantIds = getAllDescendantAssetIds(item.path, projectDetails);
+          subFolderDescendantIds.forEach(id => {
+            updatedCheckedItems[id] = isChecked;
+          });
+        }
+      });
+      return updatedCheckedItems;
+    });
+  }, [projectDetails, getAllDescendantAssetIds]);
+
+
+  // Helper to determine if all *loaded* children of a project are checked for the project's "select all" checkbox
+  const areAllProjectChildrenChecked = useCallback((projectPath) => {
+    const children = projectDetails[projectPath]?.filter(item => item.type !== "Project") || [];
+    if (children.length === 0) return false; // If no children, it's not "all checked"
+
+    return children.every(item => {
+      // Check the item itself
+      if (!checkedItems[item.id]) return false;
+
+      // If it's a folder, also check if all its currently loaded descendants are checked
+      if (item.type === 'Folder' && expandedFolder[item.path]) {
+        const folderDescendantIds = getAllDescendantAssetIds(item.path, projectDetails);
+        return folderDescendantIds.every(id => checkedItems[id]);
+      }
+      return true; // It's an asset and it's checked
+    });
+  }, [projectDetails, checkedItems, expandedFolder, getAllDescendantAssetIds]);
+
+  // Helper to determine if all *loaded* children of a folder are checked for the folder's "select all" checkbox
+  const areAllFolderChildrenChecked = useCallback((folderPath) => {
+    const children = projectDetails[folderPath]?.filter(item => item.type !== "Project") || [];
+    if (children.length === 0) return false;
+
+    return children.every(item => {
+      // Check the item itself
+      if (!checkedItems[item.id]) return false;
+
+      // If it's a folder, also check if all its currently loaded descendants are checked
+      if (item.type === 'Folder' && expandedFolder[item.path]) {
+        const subFolderDescendantIds = getAllDescendantAssetIds(item.path, projectDetails);
+        return subFolderDescendantIds.every(id => checkedItems[id]);
+      }
+      return true; // It's an asset and it's checked
+    });
+  }, [projectDetails, checkedItems, expandedFolder, getAllDescendantAssetIds]);
+
 
   const handleProcessClick = () => {
     const selectedAssets = [];
-    for (const itemId in checkedItems) {
-      if (checkedItems[itemId]) {
-        const project = projects.find((p) => p.id === itemId);
-        if (project) {
-          selectedAssets.push({
-            name: project.path,
-            id: project.id,
-            type: project.type,
-          });
-          continue;
-        }
-        for (const projectName in projectDetails) {
-          const item = projectDetails[projectName]?.find(
-            (i) => i.id === itemId
-          );
-          if (item) {
-            selectedAssets.push({
-              name: item.path,
-              id: item.id,
-              type: item.type,
-            });
-            break;
-          }
-        }
+    // Iterate over projects to find checked projects
+    projects.forEach(project => {
+      if (checkedItems[project.id]) {
+        selectedAssets.push({
+          name: project.path,
+          id: project.id,
+          type: project.type,
+        });
       }
+    });
+
+    // Iterate over projectDetails to find checked assets/folders (including nested ones)
+    // This approach ensures we capture all checked items regardless of their depth
+    for (const pathKey in projectDetails) {
+      projectDetails[pathKey]?.forEach(item => {
+        if (checkedItems[item.id] && !selectedAssets.some(asset => asset.id === item.id)) {
+          selectedAssets.push({
+            name: item.path, // Use item.path for full path
+            id: item.id,
+            type: item.type,
+          });
+        }
+      });
     }
+
     console.log("Selected Assets for Processing:", selectedAssets);
     setCheckedAssets(selectedAssets);
     setIsProcessing(true);
   };
 
-  const handleResetSelection = () => {
+  const handleResetSelection = useCallback(() => {
     setCheckedItems({});
-  };
+  }, []);
 
   if (isProcessing) {
-    return <ProcessPage selectedAssets={checkedAssets} serverUrl={serverUrl} sessionId={sessionId} onGoBack={() => setIsProcessing(false)} />;
+    return (
+      <ProcessPage
+        selectedAssets={checkedAssets}
+        serverUrl={serverUrl}
+        sessionId={sessionId}
+        onGoBack={() => setIsProcessing(false)}
+      />
+    );
   }
 
   return (
@@ -262,7 +378,15 @@ function HomePage({ sessionId, serverUrl }) {
                 <tr>
                   <th></th>
                   <th>
-                    <input type="checkbox" onChange={handleCheckAllProjects} />
+                    <input
+                      type="checkbox"
+                      onChange={handleCheckAllProjects}
+                      // Determine if all top-level projects (and their loaded children) are checked
+                      checked={
+                        projects.length > 0 &&
+                        projects.every(project => checkedItems[project.id] && areAllProjectChildrenChecked(project.path))
+                      }
+                    />
                   </th>
                   <th>Path</th>
                   <th>Updated By</th>
@@ -294,6 +418,8 @@ function HomePage({ sessionId, serverUrl }) {
                           type="checkbox"
                           checked={checkedItems[project.id] || false}
                           onChange={() => handleCheckboxChange(project.id)}
+                          // Stop propagation to prevent row click from toggling details
+                          onClick={(e) => e.stopPropagation()}
                         />
                       </td>
                       <td>{project.path}</td>
@@ -309,7 +435,7 @@ function HomePage({ sessionId, serverUrl }) {
                     {expandedProject === project.path &&
                       projectDetails[project.path] && (
                         <tr className="project-details-row">
-                          <td colSpan="6">
+                          <td colSpan="7"> {/* Adjusted colSpan to match parent table headers */}
                             <div className="project-details">
                               <h4>Details for {project.path}:</h4>
                               {detailsLoading[project.path] ? (
@@ -327,19 +453,20 @@ function HomePage({ sessionId, serverUrl }) {
                                   Error loading details:{" "}
                                   {detailsError[project.path]}
                                 </p>
-                              ) : projectDetails[project.path].length > 1 ? (
+                              ) : projectDetails[project.path].length > 0 ? (
                                 <table>
                                   <thead>
                                     <tr>
-                                      <th></th>
+                                      <th></th> {/* Empty header for expand/collapse icon */}
                                       <th>
                                         <input
                                           type="checkbox"
-                                          onChange={() =>
+                                          onChange={(e) =>
                                             handleCheckAllInProject(
-                                              project.path
+                                              project.path, e // Pass event here
                                             )
                                           }
+                                          checked={areAllProjectChildrenChecked(project.path)}
                                         />
                                       </th>
                                       <th>Asset Name</th>
@@ -351,7 +478,7 @@ function HomePage({ sessionId, serverUrl }) {
                                   </thead>
                                   <tbody>
                                     {projectDetails[project.path]
-                                      .filter((item) => item.type !== "Project")
+                                      // .filter((item) => item.type !== "Project") // Filter out projects if they appear here
                                       .map((item) => (
                                         <React.Fragment key={item.id}>
                                           <tr
@@ -364,12 +491,10 @@ function HomePage({ sessionId, serverUrl }) {
                                             <td>
                                               {item.type === "Folder" && (
                                                 <span
-                                                  onClick={() =>
-                                                    fetchFolderDetails(
-                                                      item.path,
-                                                      project.path
-                                                    )
-                                                  }
+                                                  onClick={(e) => {
+                                                    e.stopPropagation(); // Prevent folder click from toggling project details
+                                                    fetchFolderDetails(item.path);
+                                                  }}
                                                   style={{ cursor: "pointer" }}
                                                 >
                                                   {expandedFolder[item.path] ? (
@@ -389,6 +514,8 @@ function HomePage({ sessionId, serverUrl }) {
                                                 onChange={() =>
                                                   handleCheckboxChange(item.id)
                                                 }
+                                                // Stop propagation to prevent row click from toggling details
+                                                onClick={(e) => e.stopPropagation()}
                                               />
                                             </td>
                                             <td>
@@ -415,7 +542,7 @@ function HomePage({ sessionId, serverUrl }) {
                                             projectDetails[item.path] && (
                                               <tr>
                                                 <td
-                                                  colSpan="6"
+                                                  colSpan="7" // Adjusted colSpan
                                                   style={{
                                                     paddingLeft: "30px",
                                                   }}
@@ -430,7 +557,7 @@ function HomePage({ sessionId, serverUrl }) {
                                                       {" "}
                                                       <ClipLoader
                                                         color="#f8c146"
-                                                        size={100}
+                                                        size={20} // Smaller loader for nested
                                                         loading={
                                                           detailsLoading[
                                                           item.path
@@ -452,40 +579,39 @@ function HomePage({ sessionId, serverUrl }) {
                                                     <table>
                                                       <thead>
                                                         <tr>
+                                                          <th></th> {/* Empty header for visual alignment */}
                                                           <th>
                                                             <input
                                                               type="checkbox"
-                                                              onChange={() =>
+                                                              onChange={(e) =>
                                                                 handleCheckAllInFolder(
-                                                                  item.path
+                                                                  item.path, e // Pass event here
                                                                 )
                                                               }
+                                                              checked={areAllFolderChildrenChecked(item.path)}
                                                             />
                                                           </th>{" "}
                                                           <th>Asset Name</th>
                                                           <th>Type</th>
-                                                          <th>
-                                                            Updated By
-                                                          </th>{" "}
+                                                          <th>Updated By</th>{" "}
                                                           <th>Update Time</th>{" "}
-                                                          <th>
-                                                            Source Control
-                                                          </th>
+                                                          <th>Source Control</th>
                                                         </tr>
                                                       </thead>
                                                       <tbody>
                                                         {projectDetails[
                                                           item.path
                                                         ]
-                                                          .filter(
-                                                            (subItem) =>
-                                                              subItem.type !==
-                                                              "Folder"
-                                                          )
+                                                          // .filter(
+                                                          //   (subItem) =>
+                                                          //     subItem.type !==
+                                                          //     "Folder" // Filter out sub-folders if you only want assets here, but `getAllDescendantAssetIds` will include them
+                                                          // )
                                                           .map((subItem) => (
                                                             <tr
                                                               key={subItem.id}
                                                             >
+                                                              <td></td> {/* Empty cell for alignment */}
                                                               <td>
                                                                 <input
                                                                   type="checkbox"
@@ -499,6 +625,7 @@ function HomePage({ sessionId, serverUrl }) {
                                                                       subItem.id
                                                                     )
                                                                   }
+                                                                  onClick={(e) => e.stopPropagation()}
                                                                 />
                                                               </td>
                                                               <td>

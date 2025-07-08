@@ -6,80 +6,114 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: max-content;
+  /* min-height: max-content; Removed as it can cause layout issues. Let content define height. */
+  background-color: #f0f2f5; /* A light background for the whole page */
 }
 
 .process-title {
-  font-size: 24px;
+  font-size: 28px; /* Slightly larger title */
   margin-bottom: 30px;
-  color: white;
+  color: #333; /* Changed to dark for better contrast on light page background */
+  font-weight: bold;
 }
 
 .grid-container {
-  display: inline-grid;
-  grid-template-columns: auto auto;
-  gap: 20px; /* Using the gap for spacing between grid items */
-  border: 1px solid #ced4da; /* Subtle border for the grid container */
-  padding: 20px; /* Padding around the grid items */
-  background-color: #fff; /* Optional background for the grid container */
-  border-radius: 5px; /* Optional rounded corners for the grid container */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Optional shadow for the grid container */
+  display: grid; /* Changed from inline-grid to grid for better layout control */
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); /* Adjusted for better responsiveness and minimum width */
+  gap: 20px;
+  /* Removed border, padding, background-color, box-shadow here to let grid-items define their own look. */
+  width: 100%; /* Ensure it takes full width of its parent (process-container) */
+  max-width: 1200px; /* Limit overall width for large screens */
 }
 
 .grid-item {
   display: flex;
-  flex-direction: column; /* To arrange content within each grid item */
+  flex-direction: column;
   padding: 20px;
-  border: 1px solid #ced4da; /* Border for each grid item */
-  border-radius: 5px; /* Rounded corners for grid items */
-  background-color: #f8f9fa; /* Light background for grid items */
-  min-height: 200px; /* Minimum height for each grid item */
+  border: 1px solid #e0e0e0; /* Lighter border for grid items */
+  border-radius: 8px; /* Slightly more rounded corners */
+  background-color: #fff; /* White background for clear contrast */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08); /* More pronounced shadow for depth */
+  min-height: 250px; /* Increased min-height for better visual balance */
 }
 
 .grid-item-title {
-  font-size: 18px;
+  font-size: 20px; /* Slightly larger title within grid items */
+  margin-top: 0; /* Ensure no extra top margin */
   margin-bottom: 15px;
-  color: #495057;
-  border-bottom: 1px solid #e9ecef;
+  color: #333; /* Darker color for better readability */
+  border-bottom: 1px solid #eee; /* Lighter border for separation */
   padding-bottom: 10px;
+  font-weight: bold;
 }
 
-/* Styles for content within grid items (like the table) can remain largely the same */
-.assets-table {
+/* --- General Table Styles (Applied to all tables for consistency) --- */
+.assets-table,
+.dependencies-table,
+.commit-history-table {
   width: 100%;
   border-collapse: collapse;
+  margin-top: 15px;
+  font-size: 0.9em; /* Good size for table content */
+  line-height: 1.4; /* Improved line spacing */
+}
+
+.assets-table th, .assets-table td,
+.dependencies-table th, .dependencies-table td,
+.commit-history-table th, .commit-history-table td {
+  padding: 10px 12px; /* Increased padding for better spacing */
+  border: 1px solid #e9ecef; /* Consistent light border */
+  text-align: left;
+  color: #333; /* Darker text color for readability */
 }
 
 .assets-table th,
-.assets-table td {
-  padding: 8px;
-  border-bottom: 1px solid #e9ecef;
-  text-align: left;
-  color: #495057;
-}
-
-.assets-table th {
-  background-color: #f8f9fa;
+.dependencies-table th,
+.commit-history-table th {
+  background-color: #f2f4f6; /* A slightly darker light background for headers */
   font-weight: bold;
-  color: #495057;
+  color: #555; /* Slightly muted header text color */
+  text-transform: uppercase; /* Makes headers stand out */
+  font-size: 0.8em; /* Slightly smaller font for uppercase headers */
 }
 
-.assets-table tbody tr:last-child td {
-  border-bottom: none;
-  color: black;
+.assets-table tbody tr:nth-child(even),
+.dependencies-table tbody tr:nth-child(even),
+.commit-history-table tbody tr:nth-child(even) {
+  background-color: #fcfcfc; /* Very subtle alternate row color */
 }
 
-/* Button styles */
+.assets-table tbody tr:last-child td,
+.dependencies-table tbody tr:last-child td {
+  border-bottom: none; /* No bottom border for the last row */
+}
+
+/* Specific hover for the commit history table */
+.commit-history-table tbody tr.commit-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.commit-history-table tbody tr.commit-row:hover {
+  background-color: #eaf6ff; /* A clear, light blue on hover for clickable rows */
+}
+
+
+/* --- Button styles --- */
 .action-button,
 .render-dependencies-button,
-.go-back-button {
-  padding: 10px 15px;
-  border-radius: 5px;
+.get-commit-history-button, /* Added specific class for the get commit history button */
+.go-back-button,
+.proceed-to-pull-button {
+  padding: 12px 20px; /* More generous padding for buttons */
+  border-radius: 6px; /* Slightly more rounded buttons */
   font-size: 16px;
   cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
-  border: 1px solid transparent;
-  margin-top: 10px; /* Add some top margin for buttons within grid items */
+  transition: background-color 0.3s ease, transform 0.1s ease; /* Added transform for subtle click effect */
+  border: none; /* No default border */
+  margin-top: 15px; /* Consistent top margin */
+  font-weight: 600; /* Bolder text for buttons */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for buttons */
 }
 
 .action-button {
@@ -87,200 +121,205 @@
   color: #fff;
 }
 
-.action-button:hover {
+.action-button:hover:not(:disabled) {
   background-color: #0056b3;
-  border-color: #0056b3;
+  transform: translateY(-1px); /* Lift effect on hover */
 }
 
 .render-dependencies-button {
-  background-color: #28a745;
+  background-color: #28a745; /* Green */
   color: #fff;
 }
 
-.render-dependencies-button:hover {
-  background-color: #1e7e34;
-  border-color: #1e7e34;
+.render-dependencies-button:hover:not(:disabled) {
+  background-color: #218838;
+  transform: translateY(-1px);
+}
+
+.get-commit-history-button { /* Specific style for this button */
+  background-color: #17a2b8; /* A nice blue-green for this action */
+  color: #fff;
+}
+
+.get-commit-history-button:hover:not(:disabled) {
+  background-color: #138496;
+  transform: translateY(-1px);
 }
 
 .disabled-button {
   background-color: #e9ecef;
-  color: #495057;
+  color: #999; /* Muted color for disabled state */
   border-color: #e9ecef;
   cursor: not-allowed;
+  box-shadow: none; /* No shadow when disabled */
+  transform: none; /* No transform when disabled */
 }
 
-.status-message,
-.error-message,
-.loading-indicator {
-  margin-top: 10px;
-  font-size: 14px;
+/* --- Status Messages --- */
+.status-message {
+  margin-top: 15px; /* More space above messages */
+  padding: 12px; /* More padding */
+  border-radius: 6px;
+  font-size: 15px;
+  background-color: #f8f9fa; /* Light background */
+  color: #555; /* Default status color */
+  border: 1px solid #ddd;
 }
 
 .error-message {
-  color: #dc3545;
+  background-color: #ffebeb; /* Light red background */
+  color: #d9534f; /* Darker red text */
+  border: 1px solid #f5c6cb;
+  font-weight: bold;
 }
 
 .loading-indicator {
   display: inline-block;
   margin-left: 10px;
+  color: #007bff; /* Loading color */
 }
 
-.dependencies-container {
+.no-dependencies, .no-assets, .status-message {
+  text-align: center;
+  color: #777;
+  padding: 15px;
+  border: 1px dashed #eee;
+  border-radius: 5px;
   margin-top: 15px;
+  background-color: #fdfdfd;
+}
+
+/* --- Dependency Section specific styles --- */
+.dependencies-container {
+  margin-top: 20px; /* More margin */
+  max-height: 450px; /* Slightly increased max height */
+  overflow-y: auto;
+  padding-right: 8px; /* More space for scrollbar */
 }
 
 .dependency-item-container {
-  margin-bottom: 15px;
-  padding: 15px;
-  border: 1px solid #e0e0e0;
-  border-radius: 5px;
-  background-color: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-bottom: 18px; /* More space between dependency items */
+  padding: 18px; /* More padding */
+  border: 1px solid #e5e5e5;
+  border-radius: 7px;
+  background-color: #fefefe;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .dependency-parent-title {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: bold;
-  margin-bottom: 10px;
-  color: #333;
+  margin-bottom: 12px;
+  color: #444;
+  border-bottom: 1px dashed #f0f0f0; /* Lighter dashed border */
+  padding-bottom: 10px;
 }
 
-/* Styles for the dependencies table */
-.dependencies-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.dependencies-table th,
-.dependencies-table td {
-  padding: 8px;
-  border-bottom: 1px solid #e9ecef;
-  text-align: left;
-}
-
-.dependencies-table th {
-  background-color: #f8f9fa;
-  font-weight: bold;
-  color: #495057;
-}
-
-.dependencies-table tr {
-  border-bottom: 1px solid #e9ecef;
-  color: #495057;
-}
-
-.dependencies-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.no-dependencies {
-  color: #777;
-  font-style: italic;
-  margin-top: 10px;
-}
-
-.filtered-dependencies-container {
-  margin-top: 10px; /* Optional: Add some top margin for the container */
-}
-
-.grid-item h3 {
-  margin-top: 0; /* Adjust if needed */
-}
-
-.grid-item > div { /* Style direct divs inside grid-item */
-  margin-bottom: 15px; /* Add some spacing */
-}
-
+/* --- Input and Label Styles --- */
 .grid-item label {
-  display: inline-block;
-  margin-right: 10px;
-  font-weight: bold;
-  color: #333; /* Added color for the label */
+  display: block; /* Make label take full width */
+  margin-bottom: 8px; /* Space between label and input */
+  font-weight: 600; /* Bolder label text */
+  color: #495057;
 }
 
 .grid-item input[type="text"] {
-  padding: 8px;
+  width: calc(100% - 24px); /* Account for padding and border */
+  padding: 10px;
   border: 1px solid #ced4da;
-  border-radius: 4px;
-  width: 250px; /* Adjust width as needed */
+  border-radius: 5px;
+  font-size: 1em;
+  color: #333; /* Darker text in input */
 }
 
+/* --- Framed Data Display --- */
 .framed-data-display {
-  margin-top: 20px;
-  padding: 0; /* Remove default padding */
-  border: 1px solid #e0e0e0;
-  border-radius: 5px;
-  background-color: #f8f9fa;
-  white-space: pre-wrap; /* Preserve formatting and handle long lines */
-  font-family: monospace;
-  font-size: 1.1em;
-  color: #333; /* Default text color */
-  overflow-x: auto; /* Add horizontal scroll if content overflows */
+  margin-top: 25px; /* More space above the framed data */
+  padding: 0;
+  border: 1px solid #dcdcdc; /* Clearer border */
+  border-radius: 7px;
+  background-color: #fefefe; /* Light background */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05); /* Inner shadow for code block feel */
+  max-height: 350px; /* Increased max height */
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+  font-size: 0.9em; /* Slightly smaller for code */
+  color: #333;
 }
 
 .framed-data-display pre {
-  margin: 0 !important; /* Remove any margin, even user-agent styles */
-  padding: 15px; /* Add padding inside pre for spacing */
-  line-height: 1.3; /* Adjust line height for better readability */
+  margin: 0 !important;
+  padding: 18px; /* Generous padding inside pre */
+  line-height: 1.6; /* Increased line height for code readability */
 }
 
 .framed-data-display pre code {
-  display: block; /* Ensure code block takes full width */
-  padding: 0 !important; /* Remove any padding */
-  margin: 0 !important; /* Remove any margin */
+  display: block;
+  padding: 0 !important;
+  margin: 0 !important;
   text-align: left;
-  font-size: 1.1em;
+  font-size: 1em; /* Adjusted to 1em for consistency */
 }
 
+/* Syntax Highlighting Colors - You can customize these */
 .json-key {
-  color: #007bff;
+  color: #007bff; /* Blue */
   font-weight: bold;
 }
 
 .json-symbol {
-  color: #28a745;
+  color: #6c757d; /* Muted gray for symbols */
 }
 
 .json-string {
-  color: #a71d5d; /* Example: Reddish for strings */
+  color: #dc3545; /* Red */
 }
 
 .json-value {
-  color: #c678dd; /* Example: Purple for values */
+  color: #28a745; /* Green */
 }
 
+/* --- Go Back & Proceed Buttons --- */
 .go-back-button,
 .proceed-to-pull-button {
-  padding: 10px 15px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  background-color: #f8f9fa;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 16px;
   cursor: pointer;
-  font-size: 1em;
-  margin-top: 20px;
-  margin-right: 10px; /* Add some spacing between the buttons */
+  margin-top: 25px; /* More space above these buttons */
+  margin-right: 15px; /* More space between them */
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.go-back-button:hover,
-.proceed-to-pull-button:hover {
-  background-color: #e9ecef;
+.go-back-button {
+  background-color: #6c757d; /* Gray */
+  color: white;
+  border: none;
+}
+
+.go-back-button:hover:not(:disabled) {
+  background-color: #5a6268;
+  transform: translateY(-1px);
 }
 
 .proceed-to-pull-button {
-  background-color: #007bff;
+  background-color: #007bff; /* Blue */
   color: white;
-  border-color: #007bff;
-}
-.proceed-to-pull-button:hover {
-  background-color: #0056b3;
-  border-color: #0056b3;
-}
-.grid-item > p.status-message {
-  color: #555; /* Or any other readable color like grey or black */
+  border: none;
 }
 
-.status-message.error-message {
-  color: red;
-  font-weight: bold;
-  margin-top: 5px;
+.proceed-to-pull-button:hover:not(:disabled) {
+  background-color: #0056b3;
+  transform: translateY(-1px);
+}
+
+/* Additional utility classes */
+.text-center {
+  text-align: center;
+}
+
+.margin-top-20 {
+  margin-top: 20px;
 }
