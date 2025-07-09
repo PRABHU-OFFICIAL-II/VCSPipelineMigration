@@ -87,14 +87,14 @@ function HomePage({ sessionId, serverUrl }) {
       }
       const data = await response.json();
       setProjectDetails((prev) => ({ ...prev, [projectPath]: data.objects }));
-      setExpandedProject(projectPath); // Always expand when new data is fetched
+      setExpandedProject(projectPath);
     } catch (error) {
       console.error(`Error fetching details for ${projectPath}:`, error);
       setDetailsError((prev) => ({ ...prev, [projectPath]: error.message }));
     } finally {
       setDetailsLoading((prev) => ({ ...prev, [projectPath]: false }));
     }
-  }, [sessionId, serverUrl, projectDetails, expandedProject]);
+  }, [sessionId, serverUrl, projectDetails]);
 
   const fetchFolderDetails = useCallback(async (folderPath) => {
     // Toggle collapse/expand
