@@ -1,0 +1,31 @@
+Instructions: Build, Save, and Share Docker Image (Local .tar)
+This document provides concise steps for creating, saving, and deploying the "Source Control Pull Automation Tool" Docker image using a local .tar file.
+
+1. Prepare Files: Ensure Dockerfile, nginx.conf, and .dockerignore are in your project's root.
+-> cd C:\Dev\VCSPipelineMigration
+
+2. Build Docker Image: Compile your React app into a Docker image.
+-> docker build -t vcs-pull-tool:latest .
+
+3. Save Image to .tar: Create a single .tar file containing the Docker image.
+-> docker save -o vcs-pull-tool.tar vcs-pull-tool:latest
+
+4. Share File: Transfer vcs-pull-tool.tar to the recipient.
+
+5. Recipient Prerequisite: Docker Desktop (or Docker Engine) must be installed and running on their machine.
+
+6. Recipient Receives File: The recipient obtains the vcs-pull-tool.tar file and saves it locally.
+
+7. Recipient Opens Terminal: The recipient navigates to the directory where the .tar file is saved.
+
+8. Recipient Loads Docker Image: Import the image from the .tar file into their local Docker images.
+-> docker load -i vcs-pull-tool.tar
+
+9. Recipient Runs Docker Container: Start a container from the loaded image, mapping host port 80 to container port 80.
+-> docker run -p 80:80 --name my-vcs-app vcs-pull-tool:latest
+
+10. Recipient Accesses Application: Open a web browser and go to http://localhost. The application should now be running.
+-> Stop Container: docker stop my-vcs-app
+-> Start Container: docker start my-vcs-app
+-> Remove Container: docker rm my-vcs-app
+-> Remove Image: docker rmi vcs-pull-tool:latest
