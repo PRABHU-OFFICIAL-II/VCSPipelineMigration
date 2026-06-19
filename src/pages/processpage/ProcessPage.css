@@ -1,325 +1,755 @@
-/* ProcessPage.css */
+/* ─── ProcessPage ────────────────────────────────────────────────────────── */
+.pp-page {
+  min-height: calc(100vh - 72px);
+  background: #f4f6fb;
+  font-family: 'Segoe UI', sans-serif;
+}
 
-.process-container {
-  font-family: sans-serif;
-  padding: 30px;
+/* ── Header ── */
+.pp-header {
+  background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);
+  padding: 24px 40px;
+  box-shadow: 0 2px 8px rgba(26, 35, 126, 0.3);
+}
+
+.pp-header-inner {
+  max-width: 960px;
+  margin: 0 auto;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  /* min-height: max-content; Removed as it can cause layout issues. Let content define height. */
-  background-color: #f0f2f5; /* A light background for the whole page */
+  justify-content: space-between;
 }
 
-.process-title {
-  font-size: 28px; /* Slightly larger title */
-  margin-bottom: 30px;
-  color: #333; /* Changed to dark for better contrast on light page background */
-  font-weight: bold;
+.pp-title {
+  margin: 0 0 4px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
 }
 
-.grid-container {
-  display: grid; /* Changed from inline-grid to grid for better layout control */
-  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); /* Adjusted for better responsiveness and minimum width */
-  gap: 20px;
-  /* Removed border, padding, background-color, box-shadow here to let grid-items define their own look. */
-  width: 100%; /* Ensure it takes full width of its parent (process-container) */
-  max-width: 1200px; /* Limit overall width for large screens */
+.pp-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.72);
 }
 
-.grid-item {
+.pp-back-btn {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 8px 18px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+.pp-back-btn:hover { background: rgba(255, 255, 255, 0.28); }
+
+/* ── Body ── */
+.pp-body {
+  max-width: 960px;
+  margin: 32px auto;
+  padding: 0 24px 60px;
   display: flex;
   flex-direction: column;
-  padding: 20px;
-  border: 1px solid #e0e0e0; /* Lighter border for grid items */
-  border-radius: 8px; /* Slightly more rounded corners */
-  background-color: #fff; /* White background for clear contrast */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08); /* More pronounced shadow for depth */
-  min-height: 250px; /* Increased min-height for better visual balance */
+  gap: 20px;
 }
 
-.grid-item-title {
-  font-size: 20px; /* Slightly larger title within grid items */
-  margin-top: 0; /* Ensure no extra top margin */
-  margin-bottom: 15px;
-  color: #333; /* Darker color for better readability */
-  border-bottom: 1px solid #eee; /* Lighter border for separation */
-  padding-bottom: 10px;
-  font-weight: bold;
+/* ── Cards ── */
+.pp-card {
+  background: #fff;
+  border: 1px solid #e0e4eb;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
 }
 
-/* --- General Table Styles (Applied to all tables for consistency) --- */
-.assets-table,
-.dependencies-table,
-.commit-history-table {
+.pp-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  border-bottom: 1px solid #f0f2f5;
+  flex-wrap: wrap;
+}
+
+.pp-card-header h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a2e;
+  flex: 1;
+}
+
+.pp-card-body {
+  padding: 20px 24px 24px;
+}
+
+.pp-card-hint {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: #6c757d;
+  line-height: 1.5;
+}
+
+/* Step badge */
+.pp-step-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #3949ab;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Count chip */
+.pp-count-chip {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #e9ecef;
+  color: #495057;
+  white-space: nowrap;
+}
+.pp-count-chip--green { background: #d4edda; color: #155724; }
+.pp-count-chip--blue  { background: #e8f4ff; color: #0056b3; }
+
+/* ── Tables ── */
+.pp-table-wrap {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.pp-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 15px;
-  font-size: 0.9em; /* Good size for table content */
-  line-height: 1.4; /* Improved line spacing */
+  font-size: 13px;
 }
 
-.assets-table th, .assets-table td,
-.dependencies-table th, .dependencies-table td,
-.commit-history-table th, .commit-history-table td {
-  padding: 10px 12px; /* Increased padding for better spacing */
-  border: 1px solid #e9ecef; /* Consistent light border */
+.pp-table th {
+  background: #f2f4f7;
+  padding: 9px 14px;
   text-align: left;
-  color: #333; /* Darker text color for readability */
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #555;
+  border-bottom: 1px solid #e9ecef;
 }
 
-.assets-table th,
-.dependencies-table th,
-.commit-history-table th {
-  background-color: #f2f4f6; /* A slightly darker light background for headers */
-  font-weight: bold;
-  color: #555; /* Slightly muted header text color */
-  text-transform: uppercase; /* Makes headers stand out */
-  font-size: 0.8em; /* Slightly smaller font for uppercase headers */
-}
-
-.assets-table tbody tr:nth-child(even),
-.dependencies-table tbody tr:nth-child(even),
-.commit-history-table tbody tr:nth-child(even) {
-  background-color: #fcfcfc; /* Very subtle alternate row color */
-}
-
-.assets-table tbody tr:last-child td,
-.dependencies-table tbody tr:last-child td {
-  border-bottom: none; /* No bottom border for the last row */
-}
-
-/* Specific hover for the commit history table */
-.commit-history-table tbody tr.commit-row {
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.commit-history-table tbody tr.commit-row:hover {
-  background-color: #eaf6ff; /* A clear, light blue on hover for clickable rows */
-}
-
-
-/* --- Button styles --- */
-.action-button,
-.render-dependencies-button,
-.get-commit-history-button, /* Added specific class for the get commit history button */
-.go-back-button,
-.proceed-to-pull-button {
-  padding: 12px 20px; /* More generous padding for buttons */
-  border-radius: 6px; /* Slightly more rounded buttons */
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.1s ease; /* Added transform for subtle click effect */
-  border: none; /* No default border */
-  margin-top: 15px; /* Consistent top margin */
-  font-weight: 600; /* Bolder text for buttons */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for buttons */
-}
-
-.action-button {
-  background-color: #007bff;
-  color: #fff;
-}
-
-.action-button:hover:not(:disabled) {
-  background-color: #0056b3;
-  transform: translateY(-1px); /* Lift effect on hover */
-}
-
-.render-dependencies-button {
-  background-color: #28a745; /* Green */
-  color: #fff;
-}
-
-.render-dependencies-button:hover:not(:disabled) {
-  background-color: #218838;
-  transform: translateY(-1px);
-}
-
-.get-commit-history-button { /* Specific style for this button */
-  background-color: #17a2b8; /* A nice blue-green for this action */
-  color: #fff;
-}
-
-.get-commit-history-button:hover:not(:disabled) {
-  background-color: #138496;
-  transform: translateY(-1px);
-}
-
-.disabled-button {
-  background-color: #e9ecef;
-  color: #999; /* Muted color for disabled state */
-  border-color: #e9ecef;
-  cursor: not-allowed;
-  box-shadow: none; /* No shadow when disabled */
-  transform: none; /* No transform when disabled */
-}
-
-/* --- Status Messages --- */
-.status-message {
-  margin-top: 15px; /* More space above messages */
-  padding: 12px; /* More padding */
-  border-radius: 6px;
-  font-size: 15px;
-  background-color: #f8f9fa; /* Light background */
-  color: #555; /* Default status color */
-  border: 1px solid #ddd;
-}
-
-.error-message {
-  background-color: #ffebeb; /* Light red background */
-  color: #d9534f; /* Darker red text */
-  border: 1px solid #f5c6cb;
-  font-weight: bold;
-}
-
-.loading-indicator {
-  display: inline-block;
-  margin-left: 10px;
-  color: #007bff; /* Loading color */
-}
-
-.no-dependencies, .no-assets, .status-message {
-  text-align: center;
-  color: #777;
-  padding: 15px;
-  border: 1px dashed #eee;
-  border-radius: 5px;
-  margin-top: 15px;
-  background-color: #fdfdfd;
-}
-
-/* --- Dependency Section specific styles --- */
-.dependencies-container {
-  margin-top: 20px; /* More margin */
-  max-height: 450px; /* Slightly increased max height */
-  overflow-y: auto;
-  padding-right: 8px; /* More space for scrollbar */
-}
-
-.dependency-item-container {
-  margin-bottom: 18px; /* More space between dependency items */
-  padding: 18px; /* More padding */
-  border: 1px solid #e5e5e5;
-  border-radius: 7px;
-  background-color: #fefefe;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-}
-
-.dependency-parent-title {
-  font-size: 17px;
-  font-weight: bold;
-  margin-bottom: 12px;
-  color: #444;
-  border-bottom: 1px dashed #f0f0f0; /* Lighter dashed border */
-  padding-bottom: 10px;
-}
-
-/* --- Input and Label Styles --- */
-.grid-item label {
-  display: block; /* Make label take full width */
-  margin-bottom: 8px; /* Space between label and input */
-  font-weight: 600; /* Bolder label text */
-  color: #495057;
-}
-
-.grid-item input[type="text"] {
-  width: calc(100% - 24px); /* Account for padding and border */
-  padding: 10px;
-  border: 1px solid #ced4da;
-  border-radius: 5px;
-  font-size: 1em;
-  color: #333; /* Darker text in input */
-}
-
-/* --- Framed Data Display --- */
-.framed-data-display {
-  margin-top: 25px; /* More space above the framed data */
-  padding: 0;
-  border: 1px solid #dcdcdc; /* Clearer border */
-  border-radius: 7px;
-  background-color: #fefefe; /* Light background */
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05); /* Inner shadow for code block feel */
-  max-height: 350px; /* Increased max height */
-  overflow-y: auto;
-  white-space: pre-wrap;
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
-  font-size: 0.9em; /* Slightly smaller for code */
+.pp-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #f0f2f5;
+  vertical-align: middle;
   color: #333;
 }
 
-.framed-data-display pre {
-  margin: 0 !important;
-  padding: 18px; /* Generous padding inside pre */
-  line-height: 1.6; /* Increased line height for code readability */
-}
+.pp-table tbody tr:last-child td { border-bottom: none; }
+.pp-table tbody tr:hover { background: #f8f9ff; }
 
-.framed-data-display pre code {
-  display: block;
-  padding: 0 !important;
-  margin: 0 !important;
-  text-align: left;
-  font-size: 1em; /* Adjusted to 1em for consistency */
-}
+.pp-table--compact td,
+.pp-table--compact th { padding: 7px 12px; }
 
-/* Syntax Highlighting Colors - You can customize these */
-.json-key {
-  color: #007bff; /* Blue */
-  font-weight: bold;
-}
-
-.json-symbol {
-  color: #6c757d; /* Muted gray for symbols */
-}
-
-.json-string {
-  color: #dc3545; /* Red */
-}
-
-.json-value {
-  color: #28a745; /* Green */
-}
-
-/* --- Go Back & Proceed Buttons --- */
-.go-back-button,
-.proceed-to-pull-button {
-  padding: 12px 20px;
-  border-radius: 6px;
-  font-size: 16px;
-  cursor: pointer;
-  margin-top: 25px; /* More space above these buttons */
-  margin-right: 15px; /* More space between them */
-  transition: background-color 0.3s ease, transform 0.1s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.go-back-button {
-  background-color: #6c757d; /* Gray */
-  color: white;
-  border: none;
-}
-
-.go-back-button:hover:not(:disabled) {
-  background-color: #5a6268;
-  transform: translateY(-1px);
-}
-
-.proceed-to-pull-button {
-  background-color: #007bff; /* Blue */
-  color: white;
-  border: none;
-}
-
-.proceed-to-pull-button:hover:not(:disabled) {
-  background-color: #0056b3;
-  transform: translateY(-1px);
-}
-
-/* Additional utility classes */
-.text-center {
+.pp-idx {
+  color: #adb5bd;
+  font-size: 12px;
+  font-weight: 700;
+  width: 32px;
   text-align: center;
 }
 
-.margin-top-20 {
-  margin-top: 20px;
+.pp-path-cell {
+  font-size: 13px;
+  color: #1a1a2e;
+  word-break: break-all;
 }
+
+.pp-id-cell {
+  font-family: monospace;
+  font-size: 11px;
+  color: #6c757d;
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Buttons ── */
+.pp-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border: none;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  margin-bottom: 0;
+}
+
+.pp-action-btn--blue   { background: #3949ab; color: #fff; }
+.pp-action-btn--blue:hover:not(.pp-action-btn--disabled)   { background: #283593; box-shadow: 0 4px 12px rgba(57,73,171,0.35); transform: translateY(-1px); }
+
+.pp-action-btn--green  { background: #28a745; color: #fff; }
+.pp-action-btn--green:hover:not(.pp-action-btn--disabled)  { background: #218838; box-shadow: 0 4px 12px rgba(40,167,69,0.35); transform: translateY(-1px); }
+
+.pp-action-btn--teal   { background: #17a2b8; color: #fff; }
+.pp-action-btn--teal:hover:not(.pp-action-btn--disabled)   { background: #138496; box-shadow: 0 4px 12px rgba(23,162,184,0.35); transform: translateY(-1px); }
+
+.pp-action-btn--disabled {
+  background: #e9ecef !important;
+  color: #adb5bd !important;
+  cursor: not-allowed;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Spinner inside button */
+.pp-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: pp-spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes pp-spin { to { transform: rotate(360deg); } }
+
+/* ── Alerts ── */
+.pp-warning-bar {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: #fff8e1;
+  border: 1px solid #ffe082;
+  border-radius: 7px;
+  font-size: 12px;
+  color: #856404;
+  font-weight: 600;
+}
+
+.pp-error-bar {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: #fff5f5;
+  border: 1px solid #f5c6cb;
+  border-radius: 7px;
+  font-size: 12px;
+  color: #c0392b;
+  font-weight: 600;
+}
+
+.pp-empty {
+  padding: 20px;
+  text-align: center;
+  font-size: 13px;
+  color: #6c757d;
+}
+
+/* ── Dependencies ── */
+.pp-dep-list {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 480px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.pp-dep-group {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.pp-dep-group-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.pp-dep-group-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a2e;
+  word-break: break-all;
+}
+
+.pp-dep-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6c757d;
+  background: #e9ecef;
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.pp-no-deps {
+  padding: 12px 14px;
+  font-size: 12px;
+  color: #6c757d;
+  font-style: italic;
+  margin: 0;
+}
+
+.pp-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px 20px;
+  text-align: center;
+}
+
+.pp-empty-icon {
+  width: 40px;
+  height: 40px;
+  background: #d4edda;
+  color: #28a745;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 auto 4px;
+}
+
+.pp-empty-state p {
+  margin: 0;
+  font-size: 13px;
+  color: #6c757d;
+}
+
+/* ── Commit timeline ── */
+.pp-selected-hash {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #e8f4ff;
+  border: 1px solid #b8daff;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.pp-hash-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #007bff;
+  flex-shrink: 0;
+}
+
+.pp-selected-hash code {
+  font-size: 11px;
+  color: #0056b3;
+  font-family: monospace;
+}
+
+.pp-clear-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6c757d;
+  font-size: 12px;
+  padding: 0;
+  line-height: 1;
+}
+.pp-clear-btn:hover { color: #dc3545; }
+
+.pp-commit-list {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.pp-commit-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f2f5;
+  cursor: pointer;
+  transition: background 0.15s;
+  position: relative;
+}
+.pp-commit-row:last-child { border-bottom: none; }
+.pp-commit-row:hover { background: #f0f4ff; }
+.pp-commit-row--active { background: #e8f0fe !important; }
+
+.pp-commit-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #dee2e6;
+  border: 2px solid #adb5bd;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.pp-commit-row--active .pp-commit-dot {
+  background: #3949ab;
+  border-color: #3949ab;
+}
+
+.pp-commit-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.pp-commit-hash {
+  font-family: monospace;
+  font-size: 12px;
+  color: #1a1a2e;
+  word-break: break-all;
+}
+.pp-commit-row--active .pp-commit-hash { color: #283593; font-weight: 700; }
+
+.pp-commit-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  color: #6c757d;
+  flex-wrap: wrap;
+}
+
+.pp-commit-author { font-weight: 600; }
+
+.pp-commit-selected-badge {
+  background: #3949ab;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ── Frame section ── */
+.pp-hash-input-group {
+  margin-top: 16px;
+  margin-bottom: 4px;
+}
+
+.pp-hash-input-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #495057;
+  margin-bottom: 7px;
+}
+
+.pp-required { color: #dc3545; }
+
+.pp-hash-input-wrap {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ced4da;
+  border-radius: 7px;
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.pp-hash-input-wrap:focus-within {
+  border-color: #3949ab;
+  box-shadow: 0 0 0 3px rgba(57,73,171,0.12);
+}
+
+.pp-hash-prefix {
+  padding: 0 12px;
+  background: #f2f4f7;
+  color: #6c757d;
+  font-size: 15px;
+  font-family: monospace;
+  border-right: 1px solid #dee2e6;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  user-select: none;
+}
+
+.pp-hash-input-wrap input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 0 12px;
+  height: 40px;
+  font-size: 13px;
+  font-family: monospace;
+  color: #1a1a2e;
+  background: transparent;
+}
+
+.pp-hash-input--error + .pp-field-error { display: block; }
+
+.pp-field-error {
+  margin: 5px 0 0;
+  font-size: 12px;
+  color: #dc3545;
+  font-weight: 600;
+}
+
+/* ── Connection mapping ── */
+.pp-mapping-section {
+  margin-bottom: 20px;
+  border: 1px solid #ffe082;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.pp-mapping-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #fffbf0;
+  border-bottom: 1px solid #ffe082;
+}
+
+.pp-mapping-icon {
+  font-size: 20px;
+  color: #856404;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.pp-mapping-title {
+  margin: 0 0 2px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #6d4c00;
+}
+
+.pp-mapping-sub {
+  margin: 0;
+  font-size: 12px;
+  color: #a07000;
+}
+
+.pp-mapping-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.pp-mapping-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #fff3cd;
+  background: #fff;
+}
+.pp-mapping-row:last-child { border-bottom: none; }
+
+.pp-mapping-source {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.pp-mapping-name {
+  font-family: monospace;
+  font-size: 12px;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pp-mapping-arrow {
+  font-size: 16px;
+  color: #adb5bd;
+  flex-shrink: 0;
+}
+
+.pp-mapping-input {
+  flex: 1;
+  padding: 7px 10px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  min-width: 0;
+}
+.pp-mapping-input:focus {
+  border-color: #3949ab;
+  box-shadow: 0 0 0 2px rgba(57,73,171,0.12);
+}
+.pp-mapping-input--empty { border-color: #ffc107; background: #fffdf0; }
+.pp-mapping-input--filled { border-color: #b7ebc8; background: #f6fff8; }
+
+/* ── Payload viewer ── */
+.pp-payload-section {
+  margin-top: 20px;
+  border: 1px solid #e0e4eb;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.pp-payload-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pp-payload-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pp-payload-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pp-tool-btn {
+  padding: 5px 12px;
+  border: none;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pp-tool-btn--gray   { background: #e9ecef; color: #495057; }
+.pp-tool-btn--gray:hover   { background: #dee2e6; }
+.pp-tool-btn--green  { background: #d4edda; color: #155724; }
+.pp-tool-btn--green:hover  { background: #c3e6cb; }
+.pp-tool-btn--purple { background: #e9d8fd; color: #4a0080; }
+.pp-tool-btn--purple:hover { background: #dbbfff; }
+.pp-tool-btn--orange { background: #ffe8cc; color: #7d3800; }
+.pp-tool-btn--orange:hover { background: #ffd5a0; }
+
+.pp-payload-viewer {
+  background: #1e1e2e;
+  max-height: 380px;
+  overflow: auto;
+}
+
+.pp-payload-viewer pre {
+  margin: 0;
+  padding: 18px 20px;
+  line-height: 1.65;
+}
+
+.pp-payload-viewer code {
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  font-size: 13px;
+  color: #cdd6f4;
+}
+
+.pp-payload-editor {
+  width: 100%;
+  height: 340px;
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  font-size: 13px;
+  padding: 18px 20px;
+  border: none;
+  resize: vertical;
+  box-sizing: border-box;
+  background: #1e1e2e;
+  color: #cdd6f4;
+  line-height: 1.65;
+  outline: none;
+}
+
+/* JSON token colours */
+.json-key    { color: #89b4fa; font-weight: 700; }
+.json-symbol { color: #a6adc8; }
+.json-string { color: #f38ba8; }
+.json-value  { color: #a6e3a1; }
+
+/* ── Footer ── */
+.pp-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pp-footer-back {
+  background: #fff;
+  color: #6c757d;
+  border: 1px solid #dee2e6;
+  padding: 11px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  transition: all 0.2s;
+}
+.pp-footer-back:hover { background: #f8f9fa; border-color: #adb5bd; color: #343a40; }
+
+.pp-footer-proceed {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #3949ab, #283593);
+  color: #fff;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(57, 73, 171, 0.35);
+  transition: box-shadow 0.2s, transform 0.1s;
+}
+.pp-footer-proceed:hover:not(:disabled) {
+  box-shadow: 0 6px 20px rgba(57, 73, 171, 0.45);
+  transform: translateY(-1px);
+}
+.pp-footer-proceed:disabled {
+  background: #9fa8da;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ── Global resets scoped to this page ── */
+.pp-page p   { margin: 0; }
+.pp-page strong { color: inherit; }

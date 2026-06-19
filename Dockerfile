@@ -1,41 +1,32 @@
-# Stage 1: Build the React application with Vite
-# We use a Node.js base image to compile the React app
-FROM node:20-alpine as builder
-
-# Set the working directory inside the container for this stage
+# Stage 1 — Build the React app
+FROM node:20-alpine AS builder
 WORKDIR /app
-
-# Copy package.json and package-lock.json first
-# This allows Docker to cache the npm install step if these files don't change
-COPY package.json ./
-COPY package-lock.json ./
-
-# Install project dependencies
+COPY package.json package-lock.json ./
 RUN npm install
-
-# Copy the rest of your application source code into the container
 COPY . .
-
-# Build the React application for production using Vite's build command
-# Vite typically outputs to a 'dist' folder by default
 RUN npm run build
 
-# Stage 2: Serve the React application with Nginx
-# We use a lightweight Nginx base image for serving static files
-FROM nginx:alpine
+# Stage 2 — Serve with Nginx + run the proxy server side-by-side
+FROM node:20-alpine
 
-# Copy the compiled React application from the 'builder' stage
-# IMPORTANT: Changed '/app/build' to '/app/dist' for Vite
+# Install Nginx
+RUN apk add --no-cache nginx
+
+WORKDIR /app
+
+# Copy the compiled React app into Nginx's web root
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Remove the default Nginx configuration file
-RUN rm /etc/nginx/conf.d/default.conf
+# Copy nginx config
+COPY nginx.conf /etc/nginx/http.d/default.conf
 
-# Copy your custom Nginx configuration file
-COPY nginx.conf /etc/nginx/conf.d/
+# Copy the proxy server and its dependencies
+COPY proxy-server.cjs ./
+# Copy package files so we can install only the proxy's runtime dep if needed
+# (proxy-server.cjs uses only Node built-ins, so no npm install needed)
 
-# Expose port 80, which Nginx will be listening on inside the container
+# Expose port 80 (Nginx)
 EXPOSE 80
 
-# Command to run Nginx when the container starts
-CMD ["nginx", "-g", "daemon off;"]
+# Start script: launch proxy in background, then Nginx in foreground
+CMD node /app/proxy-server.cjs & nginx -g "daemon off;"
