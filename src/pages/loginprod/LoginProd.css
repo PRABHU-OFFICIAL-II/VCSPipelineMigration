@@ -223,35 +223,10 @@
     letter-spacing: 0.5px;
 }
 
-/* SSO box */
+/* SSO panel container */
 .lp-sso-box {
     background: #f8ffff;
     border: 1px solid #d0f0f5;
     border-radius: 9px;
-    padding: 16px;
-}
-
-.lp-sso-box .lp-field input:focus {
-    border-color: #0097a7;
-    box-shadow: 0 0 0 3px rgba(0,151,167,0.1);
-}
-
-.lp-btn-sso {
-    width: 100%;
-    padding: 10px;
-    background: #fff;
-    color: #0097a7;
-    border: 1.5px solid #0097a7;
-    border-radius: 7px;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-    margin-top: 4px;
-}
-
-.lp-btn-sso:hover {
-    background: #0097a7;
-    color: #fff;
-    box-shadow: 0 3px 10px rgba(0,151,167,0.3);
+    padding: 14px;
 }

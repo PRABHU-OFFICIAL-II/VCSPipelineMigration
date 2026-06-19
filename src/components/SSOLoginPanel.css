@@ -1,0 +1,440 @@
+/* ─── SSOLoginPanel ──────────────────────────────────────────────────────── */
+.sso-panel {
+  --sso-accent:       #3949ab;
+  --sso-accent-light: rgba(57, 73, 171, 0.12);
+  --sso-accent-dark:  #283593;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.sso-panel--teal {
+  --sso-accent:       #0097a7;
+  --sso-accent-light: rgba(0, 151, 167, 0.10);
+  --sso-accent-dark:  #00838f;
+}
+
+/* ── Progress bubbles ── */
+.sso-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 22px;
+  padding: 0 8px;
+}
+
+.sso-bubble-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.sso-bubble {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #e9ecef;
+  color: #adb5bd;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.25s, color 0.25s;
+  border: 2px solid #dee2e6;
+}
+
+.sso-bubble-wrap--active .sso-bubble {
+  background: var(--sso-accent);
+  color: #fff;
+  border-color: var(--sso-accent);
+  box-shadow: 0 0 0 4px var(--sso-accent-light);
+}
+
+.sso-bubble-wrap--done .sso-bubble {
+  background: #28a745;
+  color: #fff;
+  border-color: #28a745;
+}
+
+.sso-bubble-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #adb5bd;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.sso-bubble-wrap--active .sso-bubble-label { color: var(--sso-accent); }
+.sso-bubble-wrap--done .sso-bubble-label   { color: #28a745; }
+
+.sso-step-line {
+  flex: 1;
+  height: 2px;
+  background: #dee2e6;
+  margin: 0 4px;
+  margin-bottom: 15px;
+  transition: background 0.25s;
+  min-width: 24px;
+}
+
+.sso-step-line--done { background: #28a745; }
+
+/* ── Alert ── */
+.sso-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  background: #fff5f5;
+  border: 1px solid #f5c6cb;
+  color: #c0392b;
+}
+
+.sso-alert-icon {
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── Step content ── */
+.sso-step-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sso-step-content--center {
+  align-items: center;
+  text-align: center;
+}
+
+.sso-hint {
+  margin: 0;
+  font-size: 12px;
+  color: #6c757d;
+  line-height: 1.6;
+}
+
+/* ── Field ── */
+.sso-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sso-field label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #495057;
+}
+
+.sso-req { color: #dc3545; }
+
+.sso-field input {
+  padding: 9px 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 7px;
+  font-size: 12px;
+  color: #1a1a2e;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.sso-field input:focus {
+  border-color: var(--sso-accent);
+  box-shadow: 0 0 0 3px var(--sso-accent-light);
+}
+
+.sso-field-err {
+  margin: 0;
+  font-size: 11px;
+  color: #dc3545;
+  font-weight: 600;
+}
+
+/* ── Launch button ── */
+.sso-launch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+  padding: 11px 20px;
+  background: linear-gradient(135deg, var(--sso-accent), var(--sso-accent-dark));
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px var(--sso-accent-light);
+  transition: box-shadow 0.2s, transform 0.1s;
+}
+
+.sso-launch-btn:hover {
+  box-shadow: 0 6px 18px var(--sso-accent-light);
+  transform: translateY(-1px);
+}
+
+.sso-launch-btn:active { transform: translateY(0); }
+
+.sso-launch-icon { font-size: 15px; }
+
+/* ── Waiting state ── */
+.sso-waiting-ring {
+  margin-bottom: 4px;
+}
+
+.sso-waiting-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.sso-waiting-sub {
+  margin: 0;
+  font-size: 12px;
+  color: #6c757d;
+  line-height: 1.6;
+  max-width: 340px;
+}
+
+.sso-link-btn {
+  background: none;
+  border: 1px solid var(--sso-accent);
+  color: var(--sso-accent);
+  border-radius: 7px;
+  padding: 7px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sso-link-btn:hover {
+  background: var(--sso-accent);
+  color: #fff;
+}
+
+.sso-text-btn {
+  background: none;
+  border: none;
+  color: #6c757d;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.sso-text-btn:hover { color: #343a40; }
+
+/* ── Guide card ── */
+.sso-guide {
+  background: #f8f9ff;
+  border: 1px solid #e8eaff;
+  border-radius: 9px;
+  padding: 14px 16px;
+}
+
+.sso-guide-title {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.sso-guide-title code {
+  background: #eef0ff;
+  color: var(--sso-accent);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: monospace;
+}
+
+.sso-guide-steps {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sso-guide-steps li {
+  font-size: 12px;
+  color: #495057;
+  line-height: 1.5;
+}
+
+.sso-guide-steps code {
+  background: #eef0ff;
+  color: var(--sso-accent);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: monospace;
+}
+
+.sso-guide-steps kbd {
+  background: #f1f3f5;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 11px;
+  font-family: monospace;
+  color: #343a40;
+}
+
+.sso-guide-steps strong { color: #1a1a2e; }
+
+/* ── Token textarea ── */
+.sso-token-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 7px;
+  font-size: 11px;
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  color: #1a1a2e;
+  background: #fff;
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  line-height: 1.5;
+}
+
+.sso-token-input:focus {
+  border-color: var(--sso-accent);
+  box-shadow: 0 0 0 3px var(--sso-accent-light);
+}
+
+.sso-token-input::placeholder { color: #adb5bd; font-size: 11px; }
+
+/* ── Paste action row ── */
+.sso-paste-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* ── Verify button ── */
+.sso-verify-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  flex: 1;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+  transition: box-shadow 0.2s, transform 0.1s;
+}
+
+.sso-verify-btn:hover:not(:disabled) {
+  box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
+  transform: translateY(-1px);
+}
+
+.sso-verify-btn:disabled {
+  background: #adb5bd;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* ── Success ── */
+.sso-success-icon {
+  width: 52px;
+  height: 52px;
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(40, 167, 69, 0.35);
+  animation: sso-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes sso-pop {
+  0%   { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1);   opacity: 1; }
+}
+
+.sso-success-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.sso-success-sub {
+  margin: 0;
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.sso-user-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f0fff4;
+  border: 1px solid #b7ebc8;
+  border-radius: 10px;
+  padding: 12px 16px;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.sso-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #28a745, #1e7e34);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sso-user-name {
+  margin: 0 0 2px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #155724;
+}
+
+.sso-user-email {
+  margin: 0;
+  font-size: 11px;
+  color: #28a745;
+  font-family: monospace;
+}
+
+.sso-user-org {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: #6c757d;
+}

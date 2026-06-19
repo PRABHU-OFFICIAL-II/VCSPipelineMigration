@@ -2,14 +2,13 @@ import React, { useState } from "react";
 import './LoginProd.css';
 import MainLogo from '../../assets/informatica-logo.png';
 import { ClipLoader } from 'react-spinners';
+import SSOLoginPanel from '../../components/SSOLoginPanel';
 import { proxyFetch } from '../../utils/apiClient';
 
 function LoginProd({ onLoginSuccess }) {
     const [username, setUsername]   = useState("");
     const [password, setPassword]   = useState("");
     const [regionURL, setRegionUrl] = useState("");
-    const [podURL, setPodURL]       = useState("");
-    const [sessionId, setSessionId] = useState("");
     const [errors, setErrors]       = useState({});
     const [loading, setLoading]     = useState(false);
 
@@ -18,14 +17,6 @@ function LoginProd({ onLoginSuccess }) {
         if (!username.trim())  e.username  = "Username is required";
         if (!password.trim())  e.password  = "Password is required";
         if (!regionURL.trim()) e.regionURL = "Region URL is required";
-        setErrors(e);
-        return Object.keys(e).length === 0;
-    };
-
-    const validateSSO = () => {
-        const e = {};
-        if (!sessionId.trim()) e.sessionId = "Session ID is required";
-        if (!podURL.trim())    e.podURL    = "POD URL is required";
         setErrors(e);
         return Object.keys(e).length === 0;
     };
@@ -59,14 +50,7 @@ function LoginProd({ onLoginSuccess }) {
         }
     };
 
-    const handleSSOLogin = () => {
-        if (!validateSSO()) return;
-        onLoginSuccess(sessionId, `${podURL}/saas`);
-    };
-
-    const handleKeyDown = (e, action) => {
-        if (e.key === 'Enter') action();
-    };
+    const handleKeyDown = (e, fn) => { if (e.key === 'Enter') fn(); };
 
     return (
         <div className="lp-wrap">
@@ -151,40 +135,17 @@ function LoginProd({ onLoginSuccess }) {
                     <span className="lp-divider-line" />
                 </div>
 
-                {/* ── SSO ── */}
+                {/* ── SSO panel ── */}
                 <div className="lp-section-label lp-section-label--sso">
                     <span className="lp-dot lp-dot--teal" />
-                    SSO / Session Token
+                    SSO / Federated Login
                 </div>
 
                 <div className="lp-sso-box">
-                    <div className="lp-fields lp-fields--2col">
-                        <div className="lp-field">
-                            <label>Session ID <span className="lp-req">*</span></label>
-                            <input
-                                type="text"
-                                value={sessionId}
-                                onChange={(e) => setSessionId(e.target.value)}
-                                onKeyDown={(e) => handleKeyDown(e, handleSSOLogin)}
-                                placeholder="icSessionId from SSO"
-                            />
-                            {errors.sessionId && <p className="lp-err">{errors.sessionId}</p>}
-                        </div>
-                        <div className="lp-field">
-                            <label>POD URL <span className="lp-req">*</span></label>
-                            <input
-                                type="text"
-                                value={podURL}
-                                onChange={(e) => setPodURL(e.target.value)}
-                                onKeyDown={(e) => handleKeyDown(e, handleSSOLogin)}
-                                placeholder="https://na2.dm-us.informaticacloud.com"
-                            />
-                            {errors.podURL && <p className="lp-err">{errors.podURL}</p>}
-                        </div>
-                    </div>
-                    <button className="lp-btn-sso" onClick={handleSSOLogin}>
-                        Proceed with SSO →
-                    </button>
+                    <SSOLoginPanel
+                        onSuccess={(userSession, serverUrl) => onLoginSuccess(userSession, serverUrl)}
+                        accentColor="teal"
+                    />
                 </div>
 
             </div>
