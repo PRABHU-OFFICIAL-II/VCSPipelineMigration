@@ -9,3 +9,8 @@
 *.sln
 *.sw?
 node_modules
+dist
+.vercel
+*.tar
+*.env
+.env.*
