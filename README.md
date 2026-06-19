@@ -1,207 +1,278 @@
-# VCS Pipeline Migration Utility
+# VCS Pipeline Migration Tool
 
-🚀 **Automated CI/CD Asset Migration Across Heterogeneous VCS & CI Platforms**
-
----
-
-## 📌 Overview
-
-The **VCS Pipeline Migration Utility** is a production-grade automation tool designed to migrate **CI/CD pipeline configurations and associated data assets**—including **Projects, Folders, Data Tasks, and Mappings**—across heterogeneous **Git-based Version Control Systems (VCS)** and **CI/CD platforms**.
-
-The utility ensures:
-
-* **Absolute data fidelity**
-* **Version integrity preservation**
-* **Configuration consistency**
-
-across **Development, QA, and Production** environments during large-scale migrations.
+A browser-based automation tool for migrating Informatica Intelligent Data Management Cloud (IDMC) assets between environments using the Source Control (VCS) Pull API.
 
 ---
 
-## ✨ Key Features & Technical Highlights
+## Why this tool exists
 
-### 🔹 End-to-End CI/CD Asset Migration
+Informatica imposes a **50 MB request size limit** on all Platform Services that use the underlying Migration Service architecture. When a pull operation exceeds this limit, it throws a `Request Size Overflow Exception` and fails entirely.
 
-* Automated transfer of CI/CD configurations, metadata, and project structures
-* Preserves version history, security settings, and environment-specific configurations
+This tool works around that constraint by letting you:
 
-### 🔹 High-Performance Migration Engine
-
-* Multi-threaded concurrent processing for faster migrations
-* Environment-aware orchestration (Dev / QA / Prod)
-* Reduced overall migration effort by **50%+**
-
-### 🔹 Robust API Handling
-
-* Advanced API-level error handling
-* Detailed execution and audit logs for traceability
-* Graceful handling of partial failures
-
-### 🔹 Recursive Asset Discovery with Pagination
-
-* Recursive traversal of nested projects and folders
-* Intelligent pagination using API `count` metadata
-* Guarantees **complete retrieval of deeply nested assets**
-* Implemented via `fetchAllPages` strategy
-
-### 🔹 Interactive Web UI
-
-* React-based frontend for session management and monitoring
-* Dynamic project/folder selection with recursive checkbox behavior
-* Real-time visibility into migration progress
+- Browse and cherry-pick **exactly** the assets you need (no full-repo load)
+- Automatically resolve the **full dependency tree** for every selected asset
+- Frame a precise pull request payload against a specific **commit hash**
+- Map source connections / runtimes to their target-environment equivalents
+- Execute the pull and monitor its status — all from one UI
 
 ---
 
-## 🛠️ Technology Stack
+## Live deployment
 
-| Component        | Technology                | Responsibility                                  |
-| ---------------- | ------------------------- | ----------------------------------------------- |
-| Backend Core     | Java (JDK 8+)             | Orchestration, data transformation, concurrency |
-| Communication    | REST APIs, JSON           | Source/target system integration                |
-| Automation Layer | Shell Scripting, Git      | Environment setup and execution control         |
-| Frontend/UI      | React@Vite (JavaScript)   | User interaction and migration monitoring       |
+| Environment | URL | CORS proxy |
+|---|---|---|
+| **Vercel** (recommended) | `https://vcs-pipeline-migration.vercel.app` | Built-in serverless function — no browser flags needed |
+| **Docker** (local/offline) | `http://localhost` | Bundled Node.js proxy — requires `--disable-web-security` flag |
 
 ---
 
-## 📦 Getting Started
+## Important notes
 
-### ✅ Prerequisites
+> **50 MB limit still applies.** Exceeding it will throw a `Request Size Overflow Exception`. Select only the assets you need.
 
-* Java Development Kit (**JDK 8 or higher**)
-* Node.js and npm
-* Valid credentials for source and target CI/CD systems
-* `serverUrl` for API access
-* Active `sessionId` for authentication
+> **Docker users:** open the tool with one of these commands to bypass your browser's CORS policy:
+> ```
+> chrome.exe --disable-web-security --user-data-dir="C:\chrome_dev"
+> edge.exe   --disable-web-security --user-data-dir="C:\edge_dev"
+> ```
+> Run via **Win + R** (Run panel) or a terminal.
+
+> **Connection names:** if Connection names are the same in both environments, remove the `objectSpecification` block from the framed payload and use a Generic Framed Request. If names differ, fill in the source → target mapping in the UI before framing.
+
+> **If the issue persists after using this tool,** believe in GOD and email him at ppenthoi@informatica.com.
 
 ---
 
-## 🔧 Installation
-
-### 1️⃣ Clone the Repository
+## Docker quick-start
 
 ```bash
-git clone <YOUR_REPOSITORY_URL>
-cd VCS-Pipeline-Migration-Utility
+# Load the image from the distributed tar file
+docker load -i vcs-pull-tool.tar
+
+# Run the container (serves on http://localhost)
+docker run -p 80:80 --name my-vcs-app vcs-pull-tool:latest
 ```
 
+### Container management
+
+| Action | Command |
+|---|---|
+| Stop | `docker stop my-vcs-app` |
+| Start again | `docker start my-vcs-app` |
+| Remove container | `docker rm my-vcs-app` |
+| Remove image | `docker rmi vcs-pull-tool:latest` |
+
 ---
 
-### 2️⃣ Frontend Setup (React)
+## Workflow — step by step
+
+The tool guides you through a **4-step linear flow** shown in the progress bar at the top of every page.
+
+### Step 1 — Login (DEV / Source)
+
+Authenticate to your **source** Informatica environment.
+
+**Option A — Username & Password:**  
+Enter your username, password, and Region URL (e.g. `https://dm-us.informaticacloud.com`). The tool calls `/ma/api/v2/user/login` and stores the returned `icSessionId` for all subsequent API calls.
+
+**Option B — SSO / Federated Login:**  
+1. Enter your POD URL and click **Launch SSO Login** — a popup opens your Informatica portal
+2. Complete your organisation's SSO flow (Okta, Azure AD, Ping, etc.) in the popup
+3. Once logged in, open DevTools in the popup (`F12` → **Application** → **Cookies**), find the cookie named `USER_SESSION`, and copy its value
+4. Paste it into the Session ID field and click **Verify Session** — the tool validates the token live against the API before proceeding
+
+Session is persisted in `sessionStorage` so a page refresh does not require re-login.
+
+---
+
+### Step 2 — Select Assets
+
+Browse the full project tree of your source environment.
+
+- Click **List Projects** to load all top-level projects (paginated, up to 200 per page)
+- Expand any project to see its folders and assets
+- Expand folders to see nested assets
+- Use checkboxes to select individual assets, entire folders, or full projects
+- Use the **search bar** to filter projects by name
+- A **selection counter** badge tracks how many assets are selected
+- Click **Process N Assets →** to advance
+
+---
+
+### Step 3 — Process Assets
+
+Four sequential operations, each in its own numbered card:
+
+#### Card 1 — Selected Assets
+A review table of everything you selected: path, asset type (colour-coded badge), and asset ID.
+
+#### Card 2 — Resolve Dependencies
+Click **Render Dependencies** to recursively fetch the full dependency tree for every selected asset.
+
+- Traverses up to **5 levels deep** using `GET /public/core/v3/objects/{id}/references?refType=Uses`
+- Parallel fetching per BFS level for speed
+- Filters to allowed types only: `DTEMPLATE`, `MAPPING`, `MTT`, `DSS`, `DMASK`, `DRS`, `DMAPPLET`, `MAPPLET`, `BSERVICE`, `HSCHEMA`, `PCS`, `FWCONFIG`, `CUSTOMSOURCE`, `MI_TASK`, `WORKFLOW`, `TASKFLOW`, `UDF`, `MCT`, `SAAS_CONNECTION`
+- Shows a warning if the 5-level depth limit is reached
+- Results grouped by parent asset, deduped across the full tree
+
+#### Card 3 — Select Commit
+Click **Get Commit History** to load the commit log for the source project via `GET /public/core/v3/commitHistory?q=path=='<project>'`.
+
+- Displays hash, author, and date for each commit
+- Click any row to select that commit — the hash auto-fills into the Frame Pull Request input
+- Or type a known hash directly
+
+#### Card 4 — Frame Pull Request
+Builds the final API payload:
+
+**Connection / Runtime mappings** (shown when needed):  
+Any `SAAS_CONNECTION` or `SAAS_RUNTIME_ENVIRONMENT` assets found in your selection or dependencies appear here. Enter the corresponding **target environment** name for each before framing. Fields are highlighted amber until filled.
+
+**Payload construction rules:**
+- `SAAS_CONNECTION` → goes into `objectSpecification` with `type: "Connection"`, source and target paths
+- `SAAS_RUNTIME_ENVIRONMENT` → goes into `objectSpecification` with `type: "AgentGroup"`, source and target paths
+- All other asset types → go into the `objects` array with their path and type
+- `objectSpecification` is omitted entirely if there are no connections or runtimes to map
+- `MCT` assets are normalised to `MTT`; `MAPPING` assets are normalised to `DTEMPLATE`
+
+After framing, the JSON payload is displayed with syntax highlighting. You can:
+- **Edit** — toggle into a raw textarea to modify any field directly; **Save** validates JSON before applying
+- **Copy** — copy payload to clipboard
+- **Export** — download as `pull-request-<hash>.json`
+
+Click **Proceed to Execute Pull ⚡** to advance.
+
+---
+
+### Step 4 — Execute Pull
+
+#### Card 1 — Target Environment Login
+Authenticate to your **target** (PROD) environment. Same Username/Password and SSO options as Step 1. The card collapses to a "Connected ✓" state after successful login.
+
+#### Card 2 — Migration Payload
+A summary chip shows the object count, connection mapping count, and truncated commit hash. Expand to view the full JSON.
+
+#### Card 3 — Execute Pull
+Click **⚡ Start Migration** to POST the framed payload to `POST /public/core/v3/pull` on the target environment.
+
+#### Card 4 — Migration Status
+Appears automatically after the pull is initiated. Polls `GET /public/core/v3/sourceControlAction/{pullActionId}?expand=objects` every 4 seconds (up to 20 attempts) until a terminal state is reached.
+
+Displays:
+- Overall status banner (COMPLETED / WARNING / FAILED) with colour coding
+- Action metadata grid (action ID, start time, end time)
+- Object summary pills (total / completed / warning / failed counts)
+- Per-object results table with status, path, type, and message
+
+Completed migration runs are saved to `localStorage` (last 50 entries) for audit purposes.
+
+---
+
+## Architecture
+
+| Layer | Technology | Role |
+|---|---|---|
+| Frontend | React 19 + Vite 6 | SPA — all UI, state, API orchestration |
+| Dev proxy | Vite plugin (inline middleware) | Forwards `/api-proxy/*` server-side to bypass browser CORS |
+| Production proxy (Vercel) | Node.js serverless function at `/api/proxy` | Same forwarding logic, runs as Vercel Edge Function |
+| Production proxy (Docker) | `proxy-server.cjs` on port 3001 | Standalone Node HTTP server; nginx routes `/api-proxy/` to it |
+| Container runtime | Docker + nginx + node:20-alpine | Two-stage build: Vite build → nginx serves static files + proxy sidecar |
+
+### Key components
+
+| File / Component | Purpose |
+|---|---|
+| `src/utils/apiClient.js` | `proxyFetch()` — detects Vercel vs local and routes through the right proxy |
+| `src/utils/useSessionPersist.js` | Saves/loads `{ sessionId, serverUrl }` to `sessionStorage` |
+| `src/utils/useMigrationHistory.js` | Persists migration run history to `localStorage` (capped at 50) |
+| `src/components/SSOLoginPanel.jsx` | 3-step guided SSO flow: Launch popup → Detect close → Paste & verify `USER_SESSION` |
+| `src/components/ProgressStepper.jsx` | 4-step linear flow indicator shown on every page |
+| `src/components/AssetTypeBadge.jsx` | Colour-coded pill badge per Informatica asset type |
+| `src/components/Toast.jsx` | Fixed bottom-right notifications (info / success / warning / error) |
+| `src/pages/login/LoginDev.jsx` | Step 1 — source environment authentication |
+| `src/pages/hompage/HomePage.jsx` | Step 2 — project browser and asset selection |
+| `src/pages/processpage/ProcessPage.jsx` | Step 3 — dependency resolution, commit selection, payload framing |
+| `src/pages/pullpage/PullOperatorPage.jsx` | Step 4 — target login, pull execution, live status polling |
+| `api/proxy.js` | Vercel serverless CORS proxy |
+| `proxy-server.cjs` | Docker standalone CORS proxy (port 3001) |
+| `vite.config.js` | Vite dev server + inline CORS proxy middleware |
+| `nginx.conf` | Docker nginx config — serves SPA + proxies `/api-proxy/` to port 3001 |
+
+---
+
+## Local development
 
 ```bash
+git clone https://github.com/PRABHU-OFFICIAL-II/VCSPipelineMigration.git
+cd VCSPipelineMigration
 npm install
-npm run dev
+npm run dev          # starts at http://localhost:5173 — CORS proxy built in
 ```
 
-* Application will be available at: `http://localhost:3000`
+No separate proxy process. The Vite dev server intercepts all `/api-proxy/*` requests and forwards them server-side.
 
 ---
 
-### 3️⃣ Backend Setup (Java)
+## Build & deploy
 
-Build the backend migration engine:
+### Vercel (automatic)
+
+Every push to `master` triggers a Vercel deployment. The serverless function at `api/proxy.js` handles CORS — no browser flags required.
 
 ```bash
-No handler required, already auto configured
+git push origin master   # Vercel picks it up automatically
 ```
 
----
-
-### 4️⃣ Configuration
-
-Set the required environment variables for Local Runtime, or else go with the Flow:
+### Docker (manual build)
 
 ```bash
-export SERVER_URL=https://<target-ci-server>
-export SESSION_ID=<your-session-id>
+docker build -t vcs-pull-tool:latest .
+docker save  -o vcs-pull-tool.tar vcs-pull-tool:latest
+
+# Run
+docker run -p 80:80 --name my-vcs-app vcs-pull-tool:latest
 ```
 
-Or configure them via application properties as required.
+### GitHub Pages (static fallback)
+
+```bash
+npm run deploy:gh
+```
+
+Builds with base path `/VCSPipelineMigration/` and pushes to the `gh-pages` branch. **Requires `--disable-web-security` browser flag** — no serverless proxy on GitHub Pages.
 
 ---
 
-## ⚙️ Usage Workflow
+## Informatica API endpoints used
 
-### 🔐 Step 1: Start Application & Authenticate
-
-* Ensure backend services are running
-* Validate `sessionId` authentication
-
----
-
-### 📂 Step 2: Load Projects
-
-* Click **"List Projects"** in the UI
-* Automatically retrieves all top-level projects
-* Pagination handled internally using API `count`
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/ma/api/v2/user/login` | POST | Credential-based login |
+| `/ma/api/v2/user/getSessionUser` | GET | SSO session token validation |
+| `/public/core/v3/objects` | GET | List projects / browse assets |
+| `/public/core/v3/objects/{id}/references?refType=Uses` | GET | Fetch asset dependencies |
+| `/public/core/v3/commitHistory?q=path=='...'` | GET | Fetch project commit log |
+| `/public/core/v3/pull` | POST | Execute pull operation |
+| `/public/core/v3/sourceControlAction/{id}?expand=objects` | GET | Poll pull operation status |
 
 ---
 
-### 🔁 Step 3: Recursive Asset Selection
+## Contributing
 
-* Click on a Project or Folder to recursively load:
-
-  * Sub-folders
-  * Pipelines
-  * Data tasks
-  * Mappings
-
-* Use dynamic checkboxes to:
-
-  * Select individual assets
-  * Select entire folders
-  * Select complete projects
-
----
-
-### ▶️ Step 4: Execute Migration
-
-* Click **"Process"**
-* Selected assets are serialized into a migration manifest
-* Multi-threaded migration engine begins execution
-* Progress and logs are displayed in real time
-
----
-
-## 📊 Logging & Monitoring
-
-* Detailed logs for:
-
-  * API requests and responses
-  * Asset transformation
-  * Migration success/failure states
-
-* Enables:
-
-  * Post-migration audit
-  * Failure recovery
-  * Compliance validation
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! 🚀
+Contributions, bug reports, and enhancement ideas are welcome.
 
 1. Fork the repository
-2. Create a feature branch
+2. Create a feature branch (`git checkout -b feature/my-enhancement`)
 3. Commit your changes
-4. Submit a Pull Request
-
-For bugs or enhancements, please open an issue.
+4. Open a Pull Request
 
 ---
 
-## 📜 License
+## License
 
-This project is licensed under the **MIT License** (or your chosen license).
-
----
-
-## 📬 Contact
-
-For questions or collaboration opportunities, feel free to reach out via GitHub issues or discussions.
+MIT
 
 ---
 
-⭐ **If this project helped you, consider giving it a star!**
+*Open to accept contributions and ideas for enhancement.*
