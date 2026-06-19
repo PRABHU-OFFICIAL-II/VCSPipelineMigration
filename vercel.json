@@ -9,16 +9,6 @@
       "destination": "/index.html"
     }
   ],
-  "headers": [
-    {
-      "source": "/api/proxy/(.*)",
-      "headers": [
-        { "key": "Access-Control-Allow-Origin",  "value": "*" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,PUT,DELETE,OPTIONS,PATCH" },
-        { "key": "Access-Control-Allow-Headers", "value": "*" }
-      ]
-    }
-  ],
   "functions": {
     "api/proxy/[...path].js": {
       "maxDuration": 30

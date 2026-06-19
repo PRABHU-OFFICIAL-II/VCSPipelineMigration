@@ -1,24 +1,21 @@
-/**
- * Vercel serverless CORS proxy.
- *
- * Handles:  /api-proxy/<path>
- * Reads:    x-proxy-host header  →  the real Informatica base URL
- * Forwards: request server-side (no browser CORS restrictions)
- *
- * This is the production equivalent of the Vite dev-server middleware in
- * vite.config.js and the standalone proxy-server.cjs used in Docker.
- */
+import https from 'https';
+import http  from 'http';
+import { URL } from 'url';
 
-const https = require('https');
-const http  = require('http');
-const { URL } = require('url');
+// bodyParser must be off so req is still a readable stream we can pipe
+export const config = {
+  api: {
+    bodyParser: false,
+    externalResolver: true,
+  },
+};
 
-module.exports = async function handler(req, res) {
-  // CORS headers for the browser
-  res.setHeader('Access-Control-Allow-Origin',  '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
-  res.setHeader('Access-Control-Allow-Headers', '*');
-  res.setHeader('Access-Control-Expose-Headers','*');
+export default async function handler(req, res) {
+  // CORS headers — browsers need these on every response
+  res.setHeader('Access-Control-Allow-Origin',   '*');
+  res.setHeader('Access-Control-Allow-Methods',  'GET,POST,PUT,DELETE,OPTIONS,PATCH');
+  res.setHeader('Access-Control-Allow-Headers',  '*');
+  res.setHeader('Access-Control-Expose-Headers', '*');
 
   if (req.method === 'OPTIONS') {
     res.status(204).end();
@@ -31,10 +28,12 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  // Vercel gives us req.url = /api/proxy/<rest>  — strip down to just <rest>
-  // so we can reconstruct the real path the client intended (/api-proxy/<rest>)
-  const rawUrl  = req.url || '/';
-  const stripped = rawUrl.replace(/^\/api\/proxy/, '') || '/';
+  // Strip either prefix — the rewrite delivers /api/proxy/<rest> but
+  // the original request used /api-proxy/<rest>; handle both defensively
+  const rawUrl   = req.url || '/';
+  const stripped = rawUrl
+    .replace(/^\/api\/proxy/, '')
+    .replace(/^\/api-proxy/, '') || '/';
 
   let targetUrl;
   try {
@@ -44,11 +43,12 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  // Forward headers, dropping browser-only / proxy-specific ones
+  // Forward all headers except ones that confuse the upstream server
   const forwardHeaders = {};
   for (const [key, value] of Object.entries(req.headers)) {
     const lower = key.toLowerCase();
-    if (['host', 'x-proxy-host', 'origin', 'referer', 'connection', 'transfer-encoding'].includes(lower)) continue;
+    if (['host', 'x-proxy-host', 'origin', 'referer',
+         'connection', 'transfer-encoding'].includes(lower)) continue;
     forwardHeaders[key] = value;
   }
   forwardHeaders['host'] = targetUrl.host;
@@ -65,11 +65,12 @@ module.exports = async function handler(req, res) {
       {
         hostname: targetUrl.hostname,
         port,
-        path:   targetUrl.pathname + targetUrl.search,
-        method: req.method,
+        path:    targetUrl.pathname + targetUrl.search,
+        method:  req.method,
         headers: forwardHeaders,
       },
       (proxyRes) => {
+        // Strip upstream CORS headers — we already set our own above
         const outHeaders = {};
         for (const [key, value] of Object.entries(proxyRes.headers)) {
           if (key.toLowerCase().startsWith('access-control-')) continue;
@@ -79,23 +80,18 @@ module.exports = async function handler(req, res) {
 
         res.writeHead(proxyRes.statusCode, outHeaders);
         proxyRes.pipe(res, { end: true });
-        proxyRes.on('end', resolve);
+        proxyRes.on('end',   resolve);
+        proxyRes.on('error', resolve);
       }
     );
 
     proxyReq.on('error', (err) => {
-      console.error(`[vercel-proxy] Error: ${err.message}`);
-      if (!res.headersSent) {
-        res.status(502).send(`Proxy Error: ${err.message}`);
-      }
+      console.error(`[vercel-proxy] upstream error: ${err.message}`);
+      if (!res.headersSent) res.status(502).send(`Proxy Error: ${err.message}`);
       resolve();
     });
 
-    if (req.body) {
-      const body = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
-      proxyReq.write(body);
-    } else {
-      req.pipe(proxyReq, { end: true });
-    }
+    // Pipe the raw request body through (bodyParser is disabled above)
+    req.pipe(proxyReq, { end: true });
   });
-};
+}
