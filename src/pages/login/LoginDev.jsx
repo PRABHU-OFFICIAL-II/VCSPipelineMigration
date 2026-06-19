@@ -4,6 +4,7 @@ import MainLogo from '../../assets/informatica-logo.png';
 import HomePage from "../hompage/HomePage";
 import ProgressStepper from '../../components/ProgressStepper';
 import Toast from '../../components/Toast';
+import SSOLoginPanel from '../../components/SSOLoginPanel';
 import { useSessionPersist } from '../../utils/useSessionPersist';
 import { ClipLoader } from 'react-spinners';
 import { proxyFetch } from '../../utils/apiClient';
@@ -11,14 +12,12 @@ import { proxyFetch } from '../../utils/apiClient';
 function LoginDev() {
     const { session, saveSession, clearSession } = useSessionPersist();
 
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
+    const [username, setUsername]   = useState("");
+    const [password, setPassword]   = useState("");
     const [regionURL, setRegionUrl] = useState("");
-    const [podURL, setPodURL] = useState("");
-    const [sessionId, setSessionId] = useState("");
-    const [errors, setErrors] = useState({});
-    const [loading, setLoading] = useState(false);
-    const [toast, setToast] = useState(null);
+    const [errors, setErrors]       = useState({});
+    const [loading, setLoading]     = useState(false);
+    const [toast, setToast]         = useState(null);
 
     if (session) {
         return (
@@ -35,14 +34,6 @@ function LoginDev() {
         if (!username.trim()) newErrors.username = "Username is required";
         if (!password.trim()) newErrors.password = "Password is required";
         if (!regionURL.trim()) newErrors.regionURL = "Region URL is required";
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    const validateSSO = () => {
-        const newErrors = {};
-        if (!sessionId.trim()) newErrors.sessionId = "Session ID is required";
-        if (!podURL.trim()) newErrors.podURL = "POD URL is required";
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -78,10 +69,9 @@ function LoginDev() {
         }
     };
 
-    const handleSSOLogin = () => {
-        if (!validateSSO()) return;
-        saveSession(sessionId, `${podURL}/saas`);
-        setToast({ message: 'SSO session accepted!', type: 'success' });
+    const handleSSOSuccess = (userSession, serverUrl) => {
+        saveSession(userSession, serverUrl);
+        setToast({ message: 'SSO session verified — welcome!', type: 'success' });
     };
 
     const handleKeyDown = (e, action) => {
@@ -174,40 +164,17 @@ function LoginDev() {
                             <span className="ld-divider-line" />
                         </div>
 
-                        {/* ── SSO ── */}
+                        {/* ── SSO panel ── */}
                         <div className="ld-section-header ld-section-header--sso">
                             <span className="ld-section-dot ld-section-dot--teal" />
-                            SSO / Session Token
+                            SSO / Federated Login
                         </div>
 
                         <div className="ld-sso-box">
-                            <div className="ld-field">
-                                <label>Session ID <span className="ld-req">*</span></label>
-                                <input
-                                    type="text"
-                                    value={sessionId}
-                                    onChange={(e) => setSessionId(e.target.value)}
-                                    onKeyDown={(e) => handleKeyDown(e, handleSSOLogin)}
-                                    placeholder="icSessionId from your SSO provider"
-                                />
-                                {errors.sessionId && <p className="ld-field-err">{errors.sessionId}</p>}
-                            </div>
-
-                            <div className="ld-field">
-                                <label>POD URL <span className="ld-req">*</span></label>
-                                <input
-                                    type="text"
-                                    value={podURL}
-                                    onChange={(e) => setPodURL(e.target.value)}
-                                    onKeyDown={(e) => handleKeyDown(e, handleSSOLogin)}
-                                    placeholder="https://na2.dm-us.informaticacloud.com"
-                                />
-                                {errors.podURL && <p className="ld-field-err">{errors.podURL}</p>}
-                            </div>
-
-                            <button className="ld-btn-sso" onClick={handleSSOLogin}>
-                                Proceed with SSO →
-                            </button>
+                            <SSOLoginPanel
+                                onSuccess={handleSSOSuccess}
+                                accentColor="teal"
+                            />
                         </div>
 
                     </div>
