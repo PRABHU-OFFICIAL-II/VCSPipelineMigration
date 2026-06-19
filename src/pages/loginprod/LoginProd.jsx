@@ -1,169 +1,192 @@
 import React, { useState } from "react";
 import './LoginProd.css';
 import MainLogo from '../../assets/informatica-logo.png';
+import { ClipLoader } from 'react-spinners';
+import { proxyFetch } from '../../utils/apiClient';
 
 function LoginProd({ onLoginSuccess }) {
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
+    const [username, setUsername]   = useState("");
+    const [password, setPassword]   = useState("");
     const [regionURL, setRegionUrl] = useState("");
-    const [podURL, setPodURL] = useState("");
+    const [podURL, setPodURL]       = useState("");
     const [sessionId, setSessionId] = useState("");
-    const [errors, setErrors] = useState({});
-    const [loading, setLoading] = useState(false);
+    const [errors, setErrors]       = useState({});
+    const [loading, setLoading]     = useState(false);
 
-    // Validation function
     const validateLogin = () => {
-        let newErrors = {};
-        if (!username.trim()) newErrors.username = "Username is required";
-        if (!password.trim()) newErrors.password = "Password is required";
-        if (!regionURL.trim()) newErrors.regionURL = "Region URL is mandatory for Login";
-        setErrors(newErrors);
-
-        return Object.keys(newErrors).length === 0;
+        const e = {};
+        if (!username.trim())  e.username  = "Username is required";
+        if (!password.trim())  e.password  = "Password is required";
+        if (!regionURL.trim()) e.regionURL = "Region URL is required";
+        setErrors(e);
+        return Object.keys(e).length === 0;
     };
 
     const validateSSO = () => {
-        let newErrors = {};
-        if (!sessionId.trim()) newErrors.sessionId = "Session ID is required";
-        if (!podURL.trim()) newErrors.podURL = "POD URL is mandatory for Login";
-        setErrors(newErrors);
-
-        return Object.keys(newErrors).length === 0;
+        const e = {};
+        if (!sessionId.trim()) e.sessionId = "Session ID is required";
+        if (!podURL.trim())    e.podURL    = "POD URL is required";
+        setErrors(e);
+        return Object.keys(e).length === 0;
     };
 
-    // Login Button Click Handler
     const handleLogin = async () => {
-        if (validateLogin()) {
-            setLoading(true);
-            setErrors({});
-            console.log("Logging in with:", { username, password, regionURL });
-
-            const myHeaders = new Headers();
-            myHeaders.append("Content-Type", "application/json");
-
-            const raw = JSON.stringify({
-                "username": username,
-                "password": password
-            });
-
-            const requestOptions = {
+        if (!validateLogin()) return;
+        setLoading(true);
+        setErrors({});
+        const apiUrl = `${regionURL.replace(/\/$/, "")}/ma/api/v2/user/login`;
+        try {
+            const response = await proxyFetch(apiUrl, {
                 method: "POST",
-                headers: myHeaders,
-                body: raw,
-                redirect: "follow"
-            };
-
-            const apiUrl = `${regionURL.replace(/\/$/, "")}/ma/api/v2/user/login`;
-
-            try {
-                const response = await fetch(apiUrl, requestOptions);
-                if (!response.ok) {
-                    const text = await response.text();
-                    throw new Error(`Login failed: ${response.status} - ${text}`);
-                }
-                const data = await response.json();
-                console.log("Login successful:", data);
-                if (data && data.icSessionId && data.serverUrl) {
-                    onLoginSuccess(data.icSessionId, data.serverUrl);
-                } else {
-                    console.error("icSessionId or serverUrl not found in the login response.");
-                    setErrors({ login: "Login successful, but session details are missing." });
-                }
-            } catch (error) {
-                console.error("Login error:", error);
-                setErrors({ login: error.message });
-            } finally {
-                setLoading(false);
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password }),
+                redirect: "follow",
+            });
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(`Login failed (${response.status}): ${text}`);
             }
+            const data = await response.json();
+            if (data?.icSessionId && data?.serverUrl) {
+                onLoginSuccess(data.icSessionId, data.serverUrl);
+            } else {
+                throw new Error("Session details missing in login response.");
+            }
+        } catch (error) {
+            setErrors({ login: error.message });
+        } finally {
+            setLoading(false);
         }
     };
 
-    // SSO Button Click Handler
     const handleSSOLogin = () => {
-        if (validateSSO()) {
-            console.log("Logging in with SSO:", { sessionId, podURL });
-            onLoginSuccess(sessionId, `${podURL}/saas`);
-        }
+        if (!validateSSO()) return;
+        onLoginSuccess(sessionId, `${podURL}/saas`);
+    };
+
+    const handleKeyDown = (e, action) => {
+        if (e.key === 'Enter') action();
     };
 
     return (
-        <div className="container">
-            <div className="header">
-                <img src={MainLogo} alt="Informatica Logo" className="logo" />
-                <h2>Login to PROD Environment</h2>
+        <div className="lp-wrap">
+
+            {/* ── Gradient header ── */}
+            <div className="lp-header">
+                <div className="lp-logo-pill">
+                    <img src={MainLogo} alt="Informatica" className="lp-logo" />
+                </div>
+                <h2 className="lp-title">VCS Pipeline Migration</h2>
+                <p className="lp-tagline">Authenticate to continue to the target environment</p>
+                <span className="lp-env-badge">TARGET · PROD</span>
             </div>
 
-            {errors.login && <div className="error-message">{errors.login}</div>}
+            <div className="lp-body">
 
-            {/* Native Login */}
-            <div className="login-box-native">
-                <div className="input-group">
-                    <label>Username <span className="required">*</span></label>
-                    <input
-                        type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        disabled={loading}
-                    />
-                    {errors.username && <span className="error">{errors.username}</span>}
+                {errors.login && (
+                    <div className="lp-alert">
+                        <span className="lp-alert-icon">✗</span>
+                        <span>{errors.login}</span>
+                    </div>
+                )}
+
+                {/* ── Native login ── */}
+                <div className="lp-section-label">
+                    <span className="lp-dot" />
+                    Username &amp; Password
                 </div>
-                <div className="input-group">
-                    <label>Password <span className="required">*</span></label>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        disabled={loading}
-                    />
-                    {errors.password && <span className="error">{errors.password}</span>}
+
+                <div className="lp-fields lp-fields--3col">
+                    <div className="lp-field">
+                        <label>Username <span className="lp-req">*</span></label>
+                        <input
+                            type="text"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(e, handleLogin)}
+                            disabled={loading}
+                            autoComplete="username"
+                            placeholder="your@email.com"
+                        />
+                        {errors.username && <p className="lp-err">{errors.username}</p>}
+                    </div>
+                    <div className="lp-field">
+                        <label>Password <span className="lp-req">*</span></label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(e, handleLogin)}
+                            disabled={loading}
+                            autoComplete="current-password"
+                            placeholder="••••••••"
+                        />
+                        {errors.password && <p className="lp-err">{errors.password}</p>}
+                    </div>
+                    <div className="lp-field">
+                        <label>Region URL <span className="lp-req">*</span></label>
+                        <input
+                            type="text"
+                            value={regionURL}
+                            onChange={(e) => setRegionUrl(e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(e, handleLogin)}
+                            disabled={loading}
+                            placeholder="https://dm-us.informaticacloud.com"
+                        />
+                        {errors.regionURL && <p className="lp-err">{errors.regionURL}</p>}
+                    </div>
                 </div>
-                <div className="input-group">
-                    <label>Region URL <span className="required">*</span></label>
-                    <input
-                        type="text"
-                        placeholder="https://dm-us.informaticacloud.com"
-                        value={regionURL}
-                        onChange={(e) => setRegionUrl(e.target.value)}
-                        disabled={loading}
-                    />
-                    {errors.regionURL && <span className="error">{errors.regionURL}</span>}
+
+                <button className="lp-btn-primary" onClick={handleLogin} disabled={loading}>
+                    {loading
+                        ? <><ClipLoader color="#fff" size={14} /> Signing in…</>
+                        : 'Log In to PROD →'
+                    }
+                </button>
+
+                {/* ── Divider ── */}
+                <div className="lp-divider">
+                    <span className="lp-divider-line" />
+                    <span className="lp-divider-text">OR</span>
+                    <span className="lp-divider-line" />
                 </div>
-                <div className="button-group">
-                    <button className="login-btn" onClick={handleLogin} disabled={loading}>
-                        {loading ? 'Logging In...' : 'Log In'}
+
+                {/* ── SSO ── */}
+                <div className="lp-section-label lp-section-label--sso">
+                    <span className="lp-dot lp-dot--teal" />
+                    SSO / Session Token
+                </div>
+
+                <div className="lp-sso-box">
+                    <div className="lp-fields lp-fields--2col">
+                        <div className="lp-field">
+                            <label>Session ID <span className="lp-req">*</span></label>
+                            <input
+                                type="text"
+                                value={sessionId}
+                                onChange={(e) => setSessionId(e.target.value)}
+                                onKeyDown={(e) => handleKeyDown(e, handleSSOLogin)}
+                                placeholder="icSessionId from SSO"
+                            />
+                            {errors.sessionId && <p className="lp-err">{errors.sessionId}</p>}
+                        </div>
+                        <div className="lp-field">
+                            <label>POD URL <span className="lp-req">*</span></label>
+                            <input
+                                type="text"
+                                value={podURL}
+                                onChange={(e) => setPodURL(e.target.value)}
+                                onKeyDown={(e) => handleKeyDown(e, handleSSOLogin)}
+                                placeholder="https://na2.dm-us.informaticacloud.com"
+                            />
+                            {errors.podURL && <p className="lp-err">{errors.podURL}</p>}
+                        </div>
+                    </div>
+                    <button className="lp-btn-sso" onClick={handleSSOLogin}>
+                        Proceed with SSO →
                     </button>
                 </div>
-            </div>
 
-            <div className="divider">
-                <hr />
-                <span>OR</span>
-                <hr />
-            </div>
-
-            <div className="login-box-sso">
-                <div className="input-group">
-                    <label>For SSO, please put the Session Id <span className="required">*</span></label>
-                    <input
-                        type="text"
-                        value={sessionId}
-                        onChange={(e) => setSessionId(e.target.value)}
-                    />
-                    {errors.sessionId && <span className="error">{errors.sessionId}</span>}
-                </div>
-                <div className="input-group">
-                    <label>POD URL <span className="required">*</span></label>
-                    <input
-                        type="text"
-                        placeholder="https://na2.dm-us.informaticacloud.com"
-                        value={podURL}
-                        onChange={(e) => setPodURL(e.target.value)}
-                    />
-                    {errors.podURL && <span className="error">{errors.podURL}</span>}
-                </div>
-                <div className="sso-button">
-                    <button className="sso-btn" onClick={handleSSOLogin}>Proceed with SSO</button>
-                </div>
             </div>
         </div>
     );

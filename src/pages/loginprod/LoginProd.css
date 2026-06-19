@@ -1,178 +1,257 @@
-/* PullOperatorPage.css */
-.pull-operator-container {
-  padding: 30px;
-  background-color: #f4f4f4; /* Light background */
-  min-height: 100vh; /* Ensure it takes full viewport height */
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* Center content horizontally */
+/* ─── LoginProd (embedded inside Execute Pull card) ─────────────────────── */
+.lp-wrap {
+    font-family: 'Segoe UI', sans-serif;
+    border-radius: 0 0 12px 12px;
+    overflow: hidden;
 }
 
-.pull-operator-content {
-  display: flex;
-  gap: 30px; /* Increased gap */
-  width: 90%; /* Limit width for better readability */
-  max-width: 1200px; /* Maximum width */
-  margin-top: 20px;
+/* ── Gradient header — mirrors LoginDev ── */
+.lp-header {
+    background: linear-gradient(135deg, #0056b3 0%, #007bff 100%);
+    padding: 22px 28px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
 }
 
-.login-prod-container {
-  flex: 1;
-  background-color: #fff; /* White background for login box */
-  border: 1px solid #ddd;
-  padding: 25px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.lp-logo-pill {
+    background: #fff;
+    border-radius: 10px;
+    padding: 8px 16px;
+    display: inline-flex;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.14);
+    margin-bottom: 2px;
 }
 
-.pull-actions-container {
-  flex: 1;
-  background-color: #fff; /* White background for actions box */
-  border: 1px solid #ddd;
-  padding: 25px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
+.lp-logo {
+    height: 26px;
+    width: auto;
+    display: block;
 }
 
-.pull-actions-container h2 {
-  margin-top: 0;
-  margin-bottom: 20px;
-  color: #333;
+.lp-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.2px;
 }
 
-.framed-data-display {
-  margin-bottom: 20px;
-  padding: 15px;
-  background-color: #f9f9f9;
-  border: 1px solid #eee;
-  font-family: monospace;
-  overflow: auto;
-  border-radius: 4px;
+.lp-tagline {
+    margin: 0;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.72);
 }
 
-.framed-data-display h3 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  color: #555;
+.lp-env-badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    color: #fff;
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    margin-top: 2px;
 }
 
-.go-back-button,
-.pull-actions-container button {
-  padding: 10px 15px;
-  cursor: pointer;
-  border: 1px solid #007bff;
-  color: #007bff;
-  background-color: transparent;
-  border-radius: 5px;
-  font-size: 16px;
-  transition: background-color 0.3s, color 0.3s;
-  margin-top: 10px;
+/* ── Body ── */
+.lp-body {
+    padding: 22px 24px 26px;
+    background: #fff;
 }
 
-.go-back-button:hover,
-.pull-actions-container button:hover {
-  background-color: #007bff;
-  color: #fff;
+/* Alert */
+.lp-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    background: #fff5f5;
+    border: 1px solid #f5c6cb;
+    color: #c0392b;
 }
 
-/* Styles for LoginProd within PullOperatorPage */
-.login-prod-container .container {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+.lp-alert-icon {
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+    margin-top: 1px;
 }
 
-.login-prod-container .header {
-  text-align: center;
-  margin-bottom: 20px;
+/* Section labels */
+.lp-section-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #007bff;
+    margin-bottom: 12px;
 }
 
-.login-prod-container .logo {
-  width: 150px; /* Adjust logo size */
-  height: auto;
-  margin-bottom: 10px;
+.lp-section-label--sso { color: #0097a7; }
+
+.lp-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #007bff;
+    flex-shrink: 0;
 }
 
-.login-prod-container h2 {
-  color: #333;
-  margin-top: 0;
+.lp-dot--teal { background: #0097a7; }
+
+/* Field grid */
+.lp-fields {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 14px;
 }
 
-.login-prod-container .login-box-native,
-.login-prod-container .login-box-sso {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  padding: 15px;
-  border: 1px solid #eee;
-  border-radius: 4px;
-  background-color: #f9f9f9;
+.lp-fields--3col { grid-template-columns: repeat(3, 1fr); }
+.lp-fields--2col { grid-template-columns: repeat(2, 1fr); }
+
+@media (max-width: 640px) {
+    .lp-fields--3col,
+    .lp-fields--2col { grid-template-columns: 1fr; }
 }
 
-.login-prod-container .input-group {
-  display: flex;
-  flex-direction: column;
+.lp-field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: #495057;
+    margin-bottom: 5px;
 }
 
-.login-prod-container .input-group label {
-  margin-bottom: 5px;
-  font-weight: bold;
-  color: #555;
+.lp-req { color: #dc3545; }
+
+.lp-field input {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid #d0d5dd;
+    border-radius: 7px;
+    font-size: 12px;
+    color: #1a1a2e;
+    background: #fff;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
 }
 
-.login-prod-container .input-group input[type="text"],
-.login-prod-container .input-group input[type="password"] {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 16px;
+.lp-field input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.12);
 }
 
-.login-prod-container .input-group .error {
-  color: red;
-  font-size: 14px;
-  margin-top: 3px;
+.lp-field input:disabled {
+    background: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
 }
 
-.login-prod-container .button-group,
-.login-prod-container .sso-button {
-  margin-top: 15px;
-  text-align: center;
+.lp-field input::placeholder { color: #adb5bd; font-size: 11px; }
+
+.lp-err {
+    margin: 4px 0 0;
+    font-size: 11px;
+    color: #dc3545;
+    font-weight: 600;
 }
 
-.login-prod-container .login-btn,
-.login-prod-container .sso-btn {
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
+/* Primary button */
+.lp-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: #fff;
+    border: none;
+    padding: 11px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0,123,255,0.3);
+    transition: box-shadow 0.2s, transform 0.1s;
+    width: 100%;
 }
 
-.login-prod-container .login-btn:hover,
-.login-prod-container .sso-btn:hover {
-  background-color: #0056b3;
+.lp-btn-primary:hover:not(:disabled) {
+    box-shadow: 0 6px 18px rgba(0,123,255,0.4);
+    transform: translateY(-1px);
 }
 
-.login-prod-container .divider {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 20px 0;
-  color: #777;
+.lp-btn-primary:active:not(:disabled) { transform: translateY(0); }
+
+.lp-btn-primary:disabled {
+    background: #74b4ff;
+    box-shadow: none;
+    cursor: not-allowed;
 }
 
-.login-prod-container .divider hr {
-  flex-grow: 1;
-  border: none;
-  border-top: 1px solid #ccc;
+/* Divider */
+.lp-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 20px 0;
 }
 
-.login-prod-container .divider span {
-  padding: 0 15px;
+.lp-divider-line {
+    flex: 1;
+    height: 1px;
+    background: #e9ecef;
+}
+
+.lp-divider-text {
+    font-size: 10px;
+    font-weight: 700;
+    color: #adb5bd;
+    letter-spacing: 0.5px;
+}
+
+/* SSO box */
+.lp-sso-box {
+    background: #f8ffff;
+    border: 1px solid #d0f0f5;
+    border-radius: 9px;
+    padding: 16px;
+}
+
+.lp-sso-box .lp-field input:focus {
+    border-color: #0097a7;
+    box-shadow: 0 0 0 3px rgba(0,151,167,0.1);
+}
+
+.lp-btn-sso {
+    width: 100%;
+    padding: 10px;
+    background: #fff;
+    color: #0097a7;
+    border: 1.5px solid #0097a7;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    margin-top: 4px;
+}
+
+.lp-btn-sso:hover {
+    background: #0097a7;
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(0,151,167,0.3);
 }
