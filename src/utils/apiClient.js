@@ -1,33 +1,55 @@
 /**
  * proxyFetch — drop-in replacement for fetch() that routes all absolute
- * HTTP/HTTPS calls through the local CORS proxy server.
+ * HTTP/HTTPS calls through the appropriate CORS proxy.
  *
- * How it works:
- *   - Rewrites  https://host.com/some/path  →  /api-proxy/some/path
- *   - Adds header  x-proxy-host: https://host.com  so the proxy knows
- *     which upstream server to forward to.
- *   - In dev, Vite proxies /api-proxy/* → localhost:3001 (proxy-server.cjs)
- *   - In Docker, Nginx proxies /api-proxy/* → localhost:3001 (same server)
- *   - Relative URLs are passed through unchanged.
+ * Three environments, one strategy per env:
+ *
+ *  Dev (Vite)    → /api-proxy/<path>  with  x-proxy-host header
+ *                  (handled by the corsProxyPlugin middleware in vite.config.js)
+ *
+ *  Vercel        → /api/proxy?url=<encoded-full-url>
+ *                  (handled by api/proxy.js serverless function)
+ *
+ *  Docker/Nginx  → /api-proxy/<path>  with  x-proxy-host header
+ *                  (nginx routes /api-proxy/ → proxy-server.cjs on port 3001)
+ *
+ * Detection: if the page is on a *.vercel.app domain or the hostname ends
+ * with vercel.app we use the Vercel route.  Everything else (localhost or
+ * Docker) falls back to the x-proxy-host strategy.
  */
 export async function proxyFetch(url, options = {}) {
   if (!url.startsWith('http://') && !url.startsWith('https://')) {
     return fetch(url, options);
   }
 
-  const parsed = new URL(url);
-  const proxyUrl = `/api-proxy${parsed.pathname}${parsed.search}`;
+  const isVercel =
+    typeof window !== 'undefined' &&
+    (window.location.hostname.endsWith('.vercel.app') ||
+     window.location.hostname === 'vercel.app');
 
-  // Clone / build a Headers object so we can inject x-proxy-host
+  if (isVercel) {
+    // Vercel: encode the full URL as a query param — flat endpoint, no path routing
+    const proxyUrl = `/api/proxy?url=${encodeURIComponent(url)}`;
+    let headers;
+    if (options.headers instanceof Headers) {
+      headers = new Headers(options.headers);
+    } else {
+      headers = new Headers(options.headers || {});
+    }
+    // Remove x-proxy-host in case it was already set — not needed for this strategy
+    headers.delete('x-proxy-host');
+    return fetch(proxyUrl, { ...options, headers });
+  }
+
+  // Dev / Docker: path-based proxy with x-proxy-host header
+  const parsed   = new URL(url);
+  const proxyUrl = `/api-proxy${parsed.pathname}${parsed.search}`;
   let headers;
   if (options.headers instanceof Headers) {
     headers = new Headers(options.headers);
-  } else if (options.headers && typeof options.headers === 'object') {
-    headers = new Headers(options.headers);
   } else {
-    headers = new Headers();
+    headers = new Headers(options.headers || {});
   }
   headers.set('x-proxy-host', `${parsed.protocol}//${parsed.host}`);
-
   return fetch(proxyUrl, { ...options, headers });
 }

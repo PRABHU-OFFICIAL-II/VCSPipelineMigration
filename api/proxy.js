@@ -2,7 +2,7 @@ import https from 'https';
 import http  from 'http';
 import { URL } from 'url';
 
-// bodyParser must be off so req is still a readable stream we can pipe
+// Disable body parsing — keep req as a raw stream we can pipe
 export const config = {
   api: {
     bodyParser: false,
@@ -11,7 +11,6 @@ export const config = {
 };
 
 export default async function handler(req, res) {
-  // CORS headers — browsers need these on every response
   res.setHeader('Access-Control-Allow-Origin',   '*');
   res.setHeader('Access-Control-Allow-Methods',  'GET,POST,PUT,DELETE,OPTIONS,PATCH');
   res.setHeader('Access-Control-Allow-Headers',  '*');
@@ -22,24 +21,20 @@ export default async function handler(req, res) {
     return;
   }
 
-  const proxyHost = req.headers['x-proxy-host'];
-  if (!proxyHost) {
-    res.status(400).send('Missing x-proxy-host header');
+  // The full Informatica URL is passed as ?url=<encoded>
+  const reqUrl   = new URL(req.url, `http://${req.headers.host}`);
+  const target   = reqUrl.searchParams.get('url');
+
+  if (!target) {
+    res.status(400).send('Missing ?url= query parameter');
     return;
   }
 
-  // Strip either prefix — the rewrite delivers /api/proxy/<rest> but
-  // the original request used /api-proxy/<rest>; handle both defensively
-  const rawUrl   = req.url || '/';
-  const stripped = rawUrl
-    .replace(/^\/api\/proxy/, '')
-    .replace(/^\/api-proxy/, '') || '/';
-
   let targetUrl;
   try {
-    targetUrl = new URL(stripped, proxyHost);
+    targetUrl = new URL(decodeURIComponent(target));
   } catch (e) {
-    res.status(400).send(`Bad target URL: ${e.message}`);
+    res.status(400).send(`Invalid target URL: ${e.message}`);
     return;
   }
 
@@ -70,14 +65,12 @@ export default async function handler(req, res) {
         headers: forwardHeaders,
       },
       (proxyRes) => {
-        // Strip upstream CORS headers — we already set our own above
         const outHeaders = {};
         for (const [key, value] of Object.entries(proxyRes.headers)) {
           if (key.toLowerCase().startsWith('access-control-')) continue;
           outHeaders[key] = value;
         }
         outHeaders['access-control-allow-origin'] = '*';
-
         res.writeHead(proxyRes.statusCode, outHeaders);
         proxyRes.pipe(res, { end: true });
         proxyRes.on('end',   resolve);
@@ -91,7 +84,6 @@ export default async function handler(req, res) {
       resolve();
     });
 
-    // Pipe the raw request body through (bodyParser is disabled above)
     req.pipe(proxyReq, { end: true });
   });
 }
