@@ -1,16 +1,24 @@
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
+# Build output
+dist/
+node_modules/
+
+# Docker image archive — distribute via container registry, not git
+vcs-pull-tool.tar
+
+# Environment / local overrides
+.env
+.env.local
+.env.*.local
+
+# Editor
+.vscode/
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-node_modules
-dist
-.vercel
-*.tar
-*.env
-.env.*
+
+# OS
+.DS_Store
+Thumbs.db

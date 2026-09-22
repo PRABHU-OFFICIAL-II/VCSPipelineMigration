@@ -1,23 +1,23 @@
 import React, { useState } from "react";
 import './Login.css';
 import MainLogo from '../../assets/informatica-logo.png';
-import HomePage from "../hompage/HomePage";
+import HomePage from "../homepage/HomePage";
 import ProgressStepper from '../../components/ProgressStepper';
 import Toast from '../../components/Toast';
 import SSOLoginPanel from '../../components/SSOLoginPanel';
 import { useSessionPersist } from '../../utils/useSessionPersist';
 import { ClipLoader } from 'react-spinners';
-import { proxyFetch } from '../../utils/apiClient';
+import { useLoginForm } from '../../hooks/useLoginForm';
 
 function LoginDev() {
     const { session, saveSession, clearSession } = useSessionPersist();
+    const [toast, setToast] = useState(null);
 
-    const [username, setUsername]   = useState("");
-    const [password, setPassword]   = useState("");
-    const [regionURL, setRegionUrl] = useState("");
-    const [errors, setErrors]       = useState({});
-    const [loading, setLoading]     = useState(false);
-    const [toast, setToast]         = useState(null);
+    const { username, setUsername, password, setPassword, regionURL, setRegionUrl,
+            errors, loading, handleLogin, handleKeyDown } = useLoginForm((sessionId, serverUrl) => {
+        saveSession(sessionId, serverUrl);
+        setToast({ message: 'Logged in successfully!', type: 'success' });
+    });
 
     if (session) {
         return (
@@ -29,53 +29,9 @@ function LoginDev() {
         );
     }
 
-    const validateLogin = () => {
-        const newErrors = {};
-        if (!username.trim()) newErrors.username = "Username is required";
-        if (!password.trim()) newErrors.password = "Password is required";
-        if (!regionURL.trim()) newErrors.regionURL = "Region URL is required";
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    const handleLogin = async () => {
-        if (!validateLogin()) return;
-        setLoading(true);
-        setErrors({});
-        const apiUrl = `${regionURL.replace(/\/$/, "")}/ma/api/v2/user/login`;
-        try {
-            const response = await proxyFetch(apiUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password }),
-                redirect: "follow",
-            });
-            if (!response.ok) {
-                const text = await response.text();
-                throw new Error(`Login failed (${response.status}): ${text}`);
-            }
-            const data = await response.json();
-            if (data?.icSessionId && data?.serverUrl) {
-                saveSession(data.icSessionId, data.serverUrl);
-                setToast({ message: 'Logged in successfully!', type: 'success' });
-            } else {
-                throw new Error("Session details missing in login response.");
-            }
-        } catch (error) {
-            setErrors({ login: error.message });
-            setToast({ message: error.message, type: 'error' });
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const handleSSOSuccess = (userSession, serverUrl) => {
         saveSession(userSession, serverUrl);
         setToast({ message: 'SSO session verified — welcome!', type: 'success' });
-    };
-
-    const handleKeyDown = (e, action) => {
-        if (e.key === 'Enter') action();
     };
 
     return (

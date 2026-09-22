@@ -31,12 +31,9 @@ This tool works around that constraint by letting you:
 
 > **50 MB limit still applies.** Exceeding it will throw a `Request Size Overflow Exception`. Select only the assets you need.
 
-> **Docker users:** open the tool with one of these commands to bypass your browser's CORS policy:
-> ```
-> chrome.exe --disable-web-security --user-data-dir="C:\chrome_dev"
-> edge.exe   --disable-web-security --user-data-dir="C:\edge_dev"
-> ```
-> Run via **Win + R** (Run panel) or a terminal.
+> **Credential security:** IICS credentials transit through Vercel's infrastructure when using the Vercel deployment. For environments where credential confidentiality is critical, use the Docker deployment on your internal network instead.
+
+> **Docker users:** the container bundles its own CORS proxy on port 3001 — no browser flags required. Open `http://localhost` in any standard browser after running the container.
 
 > **Connection names:** if Connection names are the same in both environments, remove the `objectSpecification` block from the framed payload and use a Generic Framed Request. If names differ, fill in the source → target mapping in the UI before framing.
 
@@ -240,7 +237,7 @@ docker run -p 80:80 --name my-vcs-app vcs-pull-tool:latest
 npm run deploy:gh
 ```
 
-Builds with base path `/VCSPipelineMigration/` and pushes to the `gh-pages` branch. **Requires `--disable-web-security` browser flag** — no serverless proxy on GitHub Pages.
+Builds with base path `/VCSPipelineMigration/` and pushes to the `gh-pages` branch. Note: GitHub Pages has no serverless proxy — browser CORS restrictions will block direct API calls. Use Docker or Vercel instead for full functionality.
 
 ---
 

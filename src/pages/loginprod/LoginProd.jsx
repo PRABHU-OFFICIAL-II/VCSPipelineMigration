@@ -1,56 +1,13 @@
-import React, { useState } from "react";
+import React from "react";
 import './LoginProd.css';
 import MainLogo from '../../assets/informatica-logo.png';
 import { ClipLoader } from 'react-spinners';
 import SSOLoginPanel from '../../components/SSOLoginPanel';
-import { proxyFetch } from '../../utils/apiClient';
+import { useLoginForm } from '../../hooks/useLoginForm';
 
 function LoginProd({ onLoginSuccess }) {
-    const [username, setUsername]   = useState("");
-    const [password, setPassword]   = useState("");
-    const [regionURL, setRegionUrl] = useState("");
-    const [errors, setErrors]       = useState({});
-    const [loading, setLoading]     = useState(false);
-
-    const validateLogin = () => {
-        const e = {};
-        if (!username.trim())  e.username  = "Username is required";
-        if (!password.trim())  e.password  = "Password is required";
-        if (!regionURL.trim()) e.regionURL = "Region URL is required";
-        setErrors(e);
-        return Object.keys(e).length === 0;
-    };
-
-    const handleLogin = async () => {
-        if (!validateLogin()) return;
-        setLoading(true);
-        setErrors({});
-        const apiUrl = `${regionURL.replace(/\/$/, "")}/ma/api/v2/user/login`;
-        try {
-            const response = await proxyFetch(apiUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password }),
-                redirect: "follow",
-            });
-            if (!response.ok) {
-                const text = await response.text();
-                throw new Error(`Login failed (${response.status}): ${text}`);
-            }
-            const data = await response.json();
-            if (data?.icSessionId && data?.serverUrl) {
-                onLoginSuccess(data.icSessionId, data.serverUrl);
-            } else {
-                throw new Error("Session details missing in login response.");
-            }
-        } catch (error) {
-            setErrors({ login: error.message });
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleKeyDown = (e, fn) => { if (e.key === 'Enter') fn(); };
+    const { username, setUsername, password, setPassword, regionURL, setRegionUrl,
+            errors, loading, handleLogin, handleKeyDown } = useLoginForm(onLoginSuccess);
 
     return (
         <div className="lp-wrap">

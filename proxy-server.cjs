@@ -13,16 +13,43 @@ const { URL } = require('url');
 
 const PORT = process.env.PROXY_PORT || 3001;
 
+// Only proxy to Informatica Cloud domains.
+const ALLOWED_HOST_RE = /^([a-z0-9-]+\.)*informatica(cloud)?\.com$/i;
+
+// Only respond with CORS headers for these origins.
+const ALLOWED_ORIGIN_RES = [
+  /^https?:\/\/([a-z0-9-]+\.)*informaticacloud\.com$/i,
+  /^http:\/\/localhost(:\d+)?$/,
+  /^http:\/\/127\.0\.0\.1(:\d+)?$/,
+];
+
+function resolveOrigin(origin) {
+  if (!origin) return null;
+  return ALLOWED_ORIGIN_RES.some((re) => re.test(origin)) ? origin : null;
+}
+
 const server = http.createServer((req, res) => {
-  // Allow the browser (or Vite dev server) to call us
-  res.setHeader('Access-Control-Allow-Origin',  '*');
+  const requestOrigin = req.headers['origin'] || '';
+  const corsOrigin    = resolveOrigin(requestOrigin);
+
+  if (corsOrigin) {
+    res.setHeader('Access-Control-Allow-Origin', corsOrigin);
+    res.setHeader('Vary', 'Origin');
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
-  res.setHeader('Access-Control-Allow-Headers', '*');
-  res.setHeader('Access-Control-Expose-Headers','*');
+  res.setHeader('Access-Control-Allow-Headers',
+    'Content-Type,Authorization,INFA-SESSION-ID,x-proxy-host');
+  res.setHeader('Access-Control-Expose-Headers', 'Content-Type,INFA-SESSION-ID');
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
     res.end();
+    return;
+  }
+
+  if (requestOrigin && !corsOrigin) {
+    res.writeHead(403, { 'Content-Type': 'text/plain' });
+    res.end('Origin not permitted');
     return;
   }
 
@@ -34,7 +61,21 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Strip the /api-proxy prefix that Vite / Nginx added
+  let proxyHostUrl;
+  try {
+    proxyHostUrl = new URL(proxyHost);
+  } catch {
+    res.writeHead(400, { 'Content-Type': 'text/plain' });
+    res.end('Invalid x-proxy-host value');
+    return;
+  }
+
+  if (!ALLOWED_HOST_RE.test(proxyHostUrl.hostname)) {
+    res.writeHead(403, { 'Content-Type': 'text/plain' });
+    res.end('Target host not permitted');
+    return;
+  }
+
   const actualPath = req.url.replace(/^\/api-proxy/, '') || '/';
 
   let targetUrl;
@@ -46,11 +87,10 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Forward every header except those that would confuse the upstream server
   const forwardHeaders = {};
   for (const [key, value] of Object.entries(req.headers)) {
     const lower = key.toLowerCase();
-    if (['host', 'x-proxy-host', 'origin', 'referer'].includes(lower)) continue;
+    if (['host', 'x-proxy-host', 'origin', 'referer', 'connection'].includes(lower)) continue;
     forwardHeaders[key] = value;
   }
   forwardHeaders['host'] = targetUrl.host;
@@ -71,14 +111,15 @@ const server = http.createServer((req, res) => {
       headers: forwardHeaders,
     },
     (proxyRes) => {
-      // Strip upstream CORS headers — we set our own above
       const responseHeaders = {};
       for (const [key, value] of Object.entries(proxyRes.headers)) {
         if (key.toLowerCase().startsWith('access-control-')) continue;
         responseHeaders[key] = value;
       }
-      responseHeaders['access-control-allow-origin'] = '*';
-
+      if (corsOrigin) {
+        responseHeaders['access-control-allow-origin'] = corsOrigin;
+        responseHeaders['vary'] = 'Origin';
+      }
       res.writeHead(proxyRes.statusCode, responseHeaders);
       proxyRes.pipe(res);
     }

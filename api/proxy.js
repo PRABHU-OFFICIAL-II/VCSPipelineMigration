@@ -9,14 +9,42 @@ export const config = {
   },
 };
 
+// Only proxy requests to Informatica Cloud domains.
+const ALLOWED_TARGET_RE = /^([a-z0-9-]+\.)*informatica(cloud)?\.com$/i;
+
+// Only allow CORS from these origins.
+const ALLOWED_ORIGIN_RES = [
+  /^https?:\/\/([a-z0-9-]+\.)*informaticacloud\.com$/i,
+  /^https?:\/\/([a-z0-9-]+\.)*vercel\.app$/i,
+  /^http:\/\/localhost(:\d+)?$/,
+  /^http:\/\/127\.0\.0\.1(:\d+)?$/,
+];
+
+function resolveOrigin(origin) {
+  if (!origin) return null;
+  return ALLOWED_ORIGIN_RES.some((re) => re.test(origin)) ? origin : null;
+}
+
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin',   '*');
-  res.setHeader('Access-Control-Allow-Methods',  'GET,POST,PUT,DELETE,OPTIONS,PATCH');
-  res.setHeader('Access-Control-Allow-Headers',  '*');
-  res.setHeader('Access-Control-Expose-Headers', '*');
+  const requestOrigin = req.headers['origin'] || '';
+  const corsOrigin    = resolveOrigin(requestOrigin);
+
+  if (corsOrigin) {
+    res.setHeader('Access-Control-Allow-Origin', corsOrigin);
+    res.setHeader('Vary', 'Origin');
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
+  res.setHeader('Access-Control-Allow-Headers',
+    'Content-Type,Authorization,INFA-SESSION-ID,x-proxy-host');
+  res.setHeader('Access-Control-Expose-Headers', 'Content-Type,INFA-SESSION-ID');
 
   if (req.method === 'OPTIONS') {
     res.status(204).end();
+    return;
+  }
+
+  if (requestOrigin && !corsOrigin) {
+    res.status(403).send('Origin not permitted');
     return;
   }
 
@@ -36,18 +64,17 @@ export default async function handler(req, res) {
     return;
   }
 
+  if (!ALLOWED_TARGET_RE.test(targetUrl.hostname)) {
+    res.status(403).send('Target host not permitted');
+    return;
+  }
+
   const targetOrigin = `${targetUrl.protocol}//${targetUrl.host}`;
 
-  // Build forwarded headers.
-  // Key WAF-bypass rules:
-  //   1. Set Origin + Referer to the TARGET domain so Informatica's WAF
-  //      treats the request as coming from its own web UI.
-  //   2. Keep User-Agent from the real browser (already in req.headers).
-  //   3. Add Accept / Accept-Language if the client didn't send them.
+  // Build forwarded headers — drop hop-by-hop and proxy-specific headers.
   const forwardHeaders = {};
   for (const [key, value] of Object.entries(req.headers)) {
     const lower = key.toLowerCase();
-    // Drop headers that are proxy-specific or would confuse the upstream
     if (['host', 'x-proxy-host', 'origin', 'referer',
          'connection', 'transfer-encoding',
          'x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto',
@@ -55,20 +82,17 @@ export default async function handler(req, res) {
     forwardHeaders[lower] = value;
   }
 
-  // Spoof Origin + Referer to the Informatica domain — passes WAF origin checks
+  // Set host, origin, and referer to the target domain as the Informatica API requires.
   forwardHeaders['host']    = targetUrl.host;
   forwardHeaders['origin']  = targetOrigin;
   forwardHeaders['referer'] = `${targetOrigin}/`;
 
-  // Ensure a browser-like User-Agent is present (Node http doesn't set one)
   if (!forwardHeaders['user-agent']) {
     forwardHeaders['user-agent'] =
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
       'AppleWebKit/537.36 (KHTML, like Gecko) ' +
       'Chrome/124.0.0.0 Safari/537.36';
   }
-
-  // Ensure standard browser Accept headers are present
   if (!forwardHeaders['accept']) {
     forwardHeaders['accept'] = 'application/json, text/plain, */*';
   }
@@ -98,7 +122,10 @@ export default async function handler(req, res) {
           if (key.toLowerCase().startsWith('access-control-')) continue;
           outHeaders[key] = value;
         }
-        outHeaders['access-control-allow-origin'] = '*';
+        if (corsOrigin) {
+          outHeaders['access-control-allow-origin'] = corsOrigin;
+          outHeaders['vary'] = 'Origin';
+        }
         res.writeHead(proxyRes.statusCode, outHeaders);
         proxyRes.pipe(res, { end: true });
         proxyRes.on('end',   resolve);

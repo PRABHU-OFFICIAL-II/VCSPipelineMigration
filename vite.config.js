@@ -4,13 +4,8 @@ import http from 'http'
 import https from 'https'
 import { URL } from 'url'
 
-/**
- * Inline CORS proxy — runs inside the Vite dev server as middleware.
- * No separate process, no port conflicts, no race conditions.
- *
- * Browser calls /api-proxy/<path> with header x-proxy-host: https://host.com
- * This middleware forwards the request to https://host.com/<path> server-side.
- */
+const ALLOWED_HOST_RE = /^([a-z0-9-]+\.)*informatica(cloud)?\.com$/i;
+
 function corsProxyPlugin() {
   return {
     name: 'vite-plugin-cors-proxy',
@@ -20,10 +15,11 @@ function corsProxyPlugin() {
           return next()
         }
 
-        // Handle CORS preflight
-        res.setHeader('Access-Control-Allow-Origin', '*')
+        res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173')
+        res.setHeader('Vary', 'Origin')
         res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH')
-        res.setHeader('Access-Control-Allow-Headers', '*')
+        res.setHeader('Access-Control-Allow-Headers',
+          'Content-Type,Authorization,INFA-SESSION-ID,x-proxy-host')
         if (req.method === 'OPTIONS') {
           res.writeHead(204)
           res.end()
@@ -37,6 +33,21 @@ function corsProxyPlugin() {
           return
         }
 
+        let proxyHostUrl
+        try {
+          proxyHostUrl = new URL(proxyHost)
+        } catch {
+          res.writeHead(400, { 'Content-Type': 'text/plain' })
+          res.end('Invalid x-proxy-host value')
+          return
+        }
+
+        if (!ALLOWED_HOST_RE.test(proxyHostUrl.hostname)) {
+          res.writeHead(403, { 'Content-Type': 'text/plain' })
+          res.end('Target host not permitted')
+          return
+        }
+
         const actualPath = req.url.replace(/^\/api-proxy/, '') || '/'
         let targetUrl
         try {
@@ -47,7 +58,6 @@ function corsProxyPlugin() {
           return
         }
 
-        // Build forwarded headers — drop browser-specific ones
         const forwardHeaders = {}
         for (const [key, value] of Object.entries(req.headers)) {
           const lower = key.toLowerCase()
@@ -77,7 +87,8 @@ function corsProxyPlugin() {
               if (key.toLowerCase().startsWith('access-control-')) continue
               outHeaders[key] = value
             }
-            outHeaders['access-control-allow-origin'] = '*'
+            outHeaders['access-control-allow-origin'] = 'http://localhost:5173'
+            outHeaders['vary'] = 'Origin'
             res.writeHead(proxyRes.statusCode, outHeaders)
             proxyRes.pipe(res)
           }
