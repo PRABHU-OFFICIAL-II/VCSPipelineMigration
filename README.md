@@ -23,7 +23,7 @@ This tool works around that constraint by letting you:
 | Environment | URL | CORS proxy |
 |---|---|---|
 | **Vercel** (recommended) | `https://vcs-pipeline-migration.vercel.app` | Built-in serverless function — no browser flags needed |
-| **Docker** (local/offline) | `http://localhost` | Bundled Node.js proxy — requires `--disable-web-security` flag |
+| **Docker** (local/offline) | `http://localhost` | Bundled Node.js proxy — no browser flags needed |
 
 ---
 
